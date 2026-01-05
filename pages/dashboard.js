@@ -26,7 +26,7 @@ export default function Dashboard() {
     checkUser();
   }, []);
 
-  const checkUser = async () => {
+    const checkUser = async () => {
     try {
       const currentUser = await getCurrentUser();
       const session = await fetchAuthSession();
@@ -36,6 +36,13 @@ export default function Dashboard() {
       setUserId(sub);
       
       if (sub) {
+        // Load user profile
+        const profileResponse = await getUserProfile(sub);
+        if (profileResponse.success && profileResponse.data) {
+          setUserProfile(profileResponse.data);
+          setHomeAltitude(profileResponse.data.homeAltitude?.toString() || '');
+        }
+        
         loadTrips(sub);
       }
     } catch (err) {
@@ -44,6 +51,8 @@ export default function Dashboard() {
     setLoading(false);
   };
 
+ const [userProfile, setUserProfile] = useState(null);
+  
   const loadTrips = async (uid) => {
     try {
       const response = await getUserTrips(uid);
@@ -64,7 +73,7 @@ export default function Dashboard() {
     }
   };
 
-  const handleAddTrip = async (e) => {
+const handleAddTrip = async (e) => {
     e.preventDefault();
     setSaving(true);
 
@@ -73,12 +82,33 @@ export default function Dashboard() {
         userId,
         tripName,
         destinationName,
-        homeAltitude: parseInt(homeAltitude),
+        homeAltitude: homeAltitude ? parseInt(homeAltitude) : (userProfile?.homeAltitude || 0),
         destinationAltitude: parseInt(destinationAltitude),
         arrivalDate,
         departureDate,
         activityLevel
       };
+
+      const response = await createTrip(tripData);
+      
+      if (response.success) {
+        setTrips([response.data, ...trips]);
+        setShowAddTrip(false);
+        // Reset form
+        setTripName('');
+        setDestinationName('');
+        setHomeAltitude('');
+        setDestinationAltitude('');
+        setArrivalDate('');
+        setDepartureDate('');
+        setActivityLevel('moderate');
+      }
+    } catch (error) {
+      console.error('Error creating trip:', error);
+      alert('Error creating trip. Please try again.');
+    }
+    setSaving(false);
+  };
 
       const response = await createTrip(tripData);
       
