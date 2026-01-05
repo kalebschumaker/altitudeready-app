@@ -8,6 +8,7 @@ export default function Calculator() {
   const [homeAlt, setHomeAlt] = useState('');
   const [destAlt, setDestAlt] = useState('');
   const [activityLevel, setActivityLevel] = useState('moderate');
+  const [fitnessLevel, setFitnessLevel] = useState('average');
   const [result, setResult] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
@@ -50,6 +51,12 @@ export default function Calculator() {
     const altChange = dest - home;
     const baseDays = Math.max(1, Math.floor(altChange / 1000));
     const multipliers = { light: 0.7, moderate: 1.0, intense: 1.3, extreme: 1.6 };
+    const fitnessMultipliers = { 
+    beginner: 1.3,      // Needs 30% more time
+    average: 1.0,       // Standard time
+    fit: 0.8,          // 20% faster acclimation
+    athlete: 0.7       // 30% faster acclimation
+  };
     const recDays = Math.ceil(baseDays * multipliers[activityLevel]);
     
     // Calculate detailed recommendations
@@ -316,16 +323,18 @@ export default function Calculator() {
             
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
-                Home Altitude (feet)
+                Current Fitness Level
               </label>
-              <input 
-                type="number" 
-                value={homeAlt}
-                onChange={(e) => setHomeAlt(e.target.value)}
-                required
-                placeholder="e.g., 500"
+              <select 
+                value={fitnessLevel}
+                onChange={(e) => setFitnessLevel(e.target.value)}
                 style={{ width: '100%', padding: 'clamp(10px, 2vw, 12px)', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}
-              />
+              >
+                <option value="beginner">Beginner (Little regular exercise)</option>
+                <option value="average">Average (Exercise 1-2x per week)</option>
+                <option value="fit">Fit (Exercise 3-4x per week)</option>
+                <option value="athlete">Athlete (Daily training)</option>
+              </select>
             </div>
             
             <div style={{ marginBottom: '20px' }}>
@@ -344,7 +353,7 @@ export default function Calculator() {
             
             <div style={{ marginBottom: '25px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
-                Activity Level
+                Activity Level at Destination
               </label>
               <select 
                 value={activityLevel}
