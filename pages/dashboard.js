@@ -110,24 +110,7 @@ export default function Dashboard() {
     setSaving(false);
   };
 
-      const response = await createTrip(tripData);
-      
-      if (response.success) {
-        setTrips([response.data, ...trips]);
-        setShowAddTrip(false);
-        setTripName('');
-        setDestinationName('');
-        setHomeAltitude('');
-        setDestinationAltitude('');
-        setArrivalDate('');
-        setDepartureDate('');
-        setActivityLevel('moderate');
-      }
-    } catch (error) {
-      console.error('Error creating trip:', error);
-      alert('Error creating trip. Please try again.');
-    }
-    setSaving(false);
+
   };
 
   const handleDeleteTrip = async (tripId) => {
