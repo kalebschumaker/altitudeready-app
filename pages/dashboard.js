@@ -83,7 +83,7 @@ const checkUser = async () => {
     }
   };
 
-  const handleAddTrip = async (e) => {
+const handleAddTrip = async (e) => {
     e.preventDefault();
     setSaving(true);
 
@@ -92,14 +92,16 @@ const checkUser = async () => {
         userId,
         tripName,
         destinationName,
-        homeAltitude: homeAltitude ? parseInt(homeAltitude) : (userProfile?.homeAltitude || 0),
+        homeAltitude: parseInt(homeAltitude) || 0,
         destinationAltitude: parseInt(destinationAltitude),
         arrivalDate,
         departureDate,
         activityLevel
       };
 
+      console.log('Creating trip with data:', tripData);
       const response = await createTrip(tripData);
+      console.log('API response:', response);
       
       if (response.success) {
         setTrips([response.data, ...trips]);
@@ -112,10 +114,13 @@ const checkUser = async () => {
         setArrivalDate('');
         setDepartureDate('');
         setActivityLevel('moderate');
+      } else {
+        console.error('API returned error:', response);
+        alert(`Error creating trip: ${response.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error creating trip:', error);
-      alert('Error creating trip. Please try again.');
+      alert(`Error creating trip: ${error.message || 'Please try again.'}`);
     }
     setSaving(false);
   };
