@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { fetchAuthSession } from 'aws-amplify/auth';
+import { fetchAuthSession, signOut } from 'aws-amplify/auth';
 import Auth from '../components/Auth';
 import { createUserProfile } from '../lib/api';
 
@@ -7,27 +7,34 @@ export default function SignInPage() {
   const router = useRouter();
 
   const handleAuthSuccess = async (userData) => {
-    // If userData is provided (new signup), create profile
-    if (userData) {
-      try {
-        const session = await fetchAuthSession();
-        const userId = session.tokens?.idToken?.payload?.sub;
-        
-        if (userId) {
-          await createUserProfile({
-            userId,
-            email: userData.email,
-            name: userData.name,
-            homeCity: userData.homeCity,
-            homeAltitude: userData.homeAltitude
-          });
+    try {
+      // If userData is provided (new signup), create profile
+      if (userData) {
+        try {
+          const session = await fetchAuthSession();
+          const userId = session.tokens?.idToken?.payload?.sub;
+          
+          if (userId) {
+            await createUserProfile({
+              userId,
+              email: userData.email,
+              name: userData.name,
+              homeCity: userData.homeCity,
+              homeAltitude: userData.homeAltitude
+            });
+          }
+        } catch (error) {
+          console.error('Error creating user profile:', error);
         }
-      } catch (error) {
-        console.error('Error creating user profile:', error);
       }
+      
+      router.push('/dashboard');
+    } catch (error) {
+      console.error('Auth success error:', error);
+      // If there's an error, try signing out and redirecting
+      await signOut();
+      router.push('/signin');
     }
-    
-    router.push('/dashboard');
   };
 
   return (
