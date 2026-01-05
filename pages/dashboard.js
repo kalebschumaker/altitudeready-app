@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getCurrentUser, signOut, fetchAuthSession } from 'aws-amplify/auth';
 import { useRouter } from 'next/router';
-import { createTrip, getUserTrips, deleteTrip } from '../lib/api';
+import { createTrip, getUserTrips, deleteTrip, getUserProfile } from '../lib/api';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
