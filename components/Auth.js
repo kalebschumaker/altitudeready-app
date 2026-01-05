@@ -1,3 +1,5 @@
+import { signIn, signUp, signOut, confirmSignUp, fetchAuthSession } from 'aws-amplify/auth';
+
 const handleSignIn = async (e) => {
     e.preventDefault();
     setError('');
