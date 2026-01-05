@@ -26,17 +26,92 @@ export default function Calculator() {
   const calculatePlan = async (e) => {
     e.preventDefault();
     
-    const altChange = parseInt(destAlt) - parseInt(homeAlt);
+    const home = parseInt(homeAlt);
+    const dest = parseInt(destAlt);
+    const altChange = dest - home;
     const baseDays = Math.max(1, Math.floor(altChange / 1000));
     const multipliers = { light: 0.7, moderate: 1.0, intense: 1.3, extreme: 1.6 };
     const recDays = Math.ceil(baseDays * multipliers[activityLevel]);
     
+    // Calculate detailed recommendations
+    const firstActivityDay = Math.max(1, Math.ceil(recDays * 0.3));
+    const moderateActivityDay = Math.max(2, Math.ceil(recDays * 0.6));
+    const fullIntensityDay = Math.max(2, recDays);
+    
+    // Calculate risk level
+    let riskLevel = 'Low';
+    let riskColor = '#10b981';
+    if (altChange > 8000) {
+      riskLevel = 'High';
+      riskColor = '#ef4444';
+    } else if (altChange > 5000) {
+      riskLevel = 'Moderate-High';
+      riskColor = '#f59e0b';
+    } else if (altChange > 2000) {
+      riskLevel = 'Moderate';
+      riskColor = '#f59e0b';
+    }
+    
+    // Calculate hydration needs (increase 1.5x at altitude)
+    const baseHydration = 2; // liters
+    const altitudeMultiplier = 1 + (altChange / 10000);
+    const recommendedHydration = Math.round(baseHydration * altitudeMultiplier * 10) / 10;
+    
+    // Calculate calorie increase (10% per 1000ft)
+    const calorieIncrease = Math.round((altChange / 1000) * 10);
+    
     setResult({
       altitudeChange: altChange,
       recommendedDays: recDays,
-      firstActivity: Math.max(1, Math.ceil(recDays * 0.3)),
-      fullIntensity: Math.max(2, recDays)
+      firstActivity: firstActivityDay,
+      moderateActivity: moderateActivityDay,
+      fullIntensity: fullIntensityDay,
+      riskLevel,
+      riskColor,
+      hydration: recommendedHydration,
+      calorieIncrease,
+      homeAltitude: home,
+      destAltitude: dest
     });
+  };
+
+  const getDayByDayPlan = () => {
+    if (!result) return [];
+    
+    const plan = [];
+    for (let day = 1; day <= result.recommendedDays; day++) {
+      let activity, intensity, tips;
+      
+      if (day < result.firstActivity) {
+        activity = "Rest & Acclimate";
+        intensity = 0;
+        tips = ["Light walking only", "Stay hydrated", "Monitor symptoms", "Avoid alcohol"];
+      } else if (day < result.moderateActivity) {
+        activity = "Light Activity";
+        intensity = 30;
+        tips = ["Easy hiking or walking", "Keep heart rate low", "Rest if symptoms appear", "Continue high fluid intake"];
+      } else if (day < result.fullIntensity) {
+        activity = "Moderate Activity";
+        intensity = 60;
+        tips = ["Moderate hiking/skiing", "70-80% of normal intensity", "Take breaks as needed", "Watch for altitude sickness"];
+      } else {
+        activity = "Full Intensity";
+        intensity = 100;
+        tips = ["All activities OK", "Listen to your body", "Maintain hydration", "Recovery is key"];
+      }
+      
+      plan.push({ day, activity, intensity, tips });
+    }
+    
+    return plan;
+  };
+
+  const getSymptomGuide = () => {
+    return {
+      normal: ["Shortness of breath during activity", "Mild fatigue", "Slight headache (day 1-2)", "Increased urination", "Sleep disturbances"],
+      warning: ["Persistent headache", "Nausea or vomiting", "Dizziness", "Extreme fatigue", "Loss of appetite"],
+      emergency: ["Severe headache not relieved by medication", "Confusion or difficulty thinking", "Shortness of breath at rest", "Coughing up pink/frothy fluid", "Unable to walk straight"]
+    };
   };
 
   return (
@@ -45,7 +120,10 @@ export default function Calculator() {
       <header style={{
         background: 'white',
         boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        padding: '1rem 2rem'
+        padding: '1rem 2rem',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100
       }}>
         <nav style={{
           maxWidth: '1200px',
@@ -112,123 +190,317 @@ export default function Calculator() {
       </header>
 
       {/* Calculator */}
-      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <h1 style={{ fontSize: '3rem', color: '#2563eb', marginBottom: '10px' }}>Acclimation Calculator</h1>
-          <p style={{ fontSize: '1.2rem', color: '#6b7280' }}>Calculate your personalized altitude acclimation plan</p>
+          <p style={{ fontSize: '1.2rem', color: '#6b7280' }}>Get your personalized altitude acclimation plan with detailed recommendations</p>
         </div>
 
-        <form onSubmit={calculatePlan} style={{ background: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937' }}>
-              Home Altitude (feet)
-            </label>
-            <input 
-              type="number" 
-              value={homeAlt}
-              onChange={(e) => setHomeAlt(e.target.value)}
-              required
-              placeholder="e.g., 500"
-              style={{ width: '100%', padding: '12px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '1rem' }}
-            />
-          </div>
-          
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937' }}>
-              Destination Altitude (feet)
-            </label>
-            <input 
-              type="number" 
-              value={destAlt}
-              onChange={(e) => setDestAlt(e.target.value)}
-              required
-              placeholder="e.g., 10000"
-              style={{ width: '100%', padding: '12px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '1rem' }}
-            />
-          </div>
-          
-          <div style={{ marginBottom: '25px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937' }}>
-              Activity Level
-            </label>
-            <select 
-              value={activityLevel}
-              onChange={(e) => setActivityLevel(e.target.value)}
-              style={{ width: '100%', padding: '12px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '1rem' }}
-            >
-              <option value="light">Light (walking, sightseeing)</option>
-              <option value="moderate">Moderate (hiking, casual skiing)</option>
-              <option value="intense">Intense (running, hard skiing)</option>
-              <option value="extreme">Extreme (racing, mountaineering)</option>
-            </select>
-          </div>
-          
-          <button 
-            type="submit" 
-            style={{ 
-              width: '100%', 
-              padding: '14px', 
-              background: '#2563eb', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '8px', 
-              fontSize: '1.1rem', 
-              fontWeight: '600', 
-              cursor: 'pointer' 
-            }}
-          >
-            Calculate My Plan
-          </button>
-        </form>
-        
-        {result && (
-          <div style={{ 
-            marginTop: '30px', 
-            padding: '30px', 
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-            color: 'white',
-            borderRadius: '12px',
-            boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
-          }}>
-            <h2 style={{ marginBottom: '20px', fontSize: '1.8rem' }}>Your Acclimation Plan</h2>
-            <div style={{ background: 'rgba(255,255,255,0.1)', padding: '15px', borderRadius: '8px', marginBottom: '12px' }}>
-              <p style={{ margin: 0 }}><strong>Altitude Change:</strong> {result.altitudeChange.toLocaleString()} feet</p>
-            </div>
-            <div style={{ background: 'rgba(255,255,255,0.1)', padding: '15px', borderRadius: '8px', marginBottom: '12px' }}>
-              <p style={{ margin: 0 }}><strong>Recommended Acclimation:</strong> {result.recommendedDays} days</p>
-            </div>
-            <div style={{ background: 'rgba(255,255,255,0.1)', padding: '15px', borderRadius: '8px', marginBottom: '12px' }}>
-              <p style={{ margin: 0 }}><strong>Start Light Activities:</strong> Day {result.firstActivity}</p>
-            </div>
-            <div style={{ background: 'rgba(255,255,255,0.1)', padding: '15px', borderRadius: '8px', marginBottom: '12px' }}>
-              <p style={{ margin: 0 }}><strong>Full Intensity Ready:</strong> Day {result.fullIntensity}</p>
-            </div>
-            
-            {!user && (
-              <div style={{ marginTop: '20px', padding: '15px', background: 'rgba(255,255,255,0.2)', borderRadius: '8px', textAlign: 'center' }}>
-                <p style={{ margin: '0 0 10px 0' }}>Want to save your plans and track your progress?</p>
-                <button
-                  onClick={() => router.push('/signin')}
-                  style={{
-                    background: 'white',
-                    color: '#2563eb',
-                    padding: '10px 20px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    fontWeight: 600,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Create Free Account
-                </button>
+        <div style={{ display: 'grid', gridTemplateColumns: result ? '400px 1fr' : '1fr', gap: '2rem' }}>
+          {/* Input Form */}
+          <div>
+            <form onSubmit={calculatePlan} style={{ 
+              background: 'white', 
+              padding: '30px', 
+              borderRadius: '12px', 
+              boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+              position: result ? 'sticky' : 'relative',
+              top: result ? '100px' : 'auto'
+            }}>
+              <h3 style={{ marginBottom: '1.5rem', color: '#1f2937', fontSize: '1.3rem' }}>Enter Your Details</h3>
+              
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937' }}>
+                  Home Altitude (feet)
+                </label>
+                <input 
+                  type="number" 
+                  value={homeAlt}
+                  onChange={(e) => setHomeAlt(e.target.value)}
+                  required
+                  placeholder="e.g., 500"
+                  style={{ width: '100%', padding: '12px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '1rem' }}
+                />
               </div>
-            )}
+              
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937' }}>
+                  Destination Altitude (feet)
+                </label>
+                <input 
+                  type="number" 
+                  value={destAlt}
+                  onChange={(e) => setDestAlt(e.target.value)}
+                  required
+                  placeholder="e.g., 10000"
+                  style={{ width: '100%', padding: '12px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '1rem' }}
+                />
+              </div>
+              
+              <div style={{ marginBottom: '25px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937' }}>
+                  Activity Level
+                </label>
+                <select 
+                  value={activityLevel}
+                  onChange={(e) => setActivityLevel(e.target.value)}
+                  style={{ width: '100%', padding: '12px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '1rem' }}
+                >
+                  <option value="light">Light (walking, sightseeing)</option>
+                  <option value="moderate">Moderate (hiking, casual skiing)</option>
+                  <option value="intense">Intense (running, hard skiing)</option>
+                  <option value="extreme">Extreme (racing, mountaineering)</option>
+                </select>
+              </div>
+              
+              <button 
+                type="submit" 
+                style={{ 
+                  width: '100%', 
+                  padding: '14px', 
+                  background: '#2563eb', 
+                  color: 'white', 
+                  border: 'none', 
+                  borderRadius: '8px', 
+                  fontSize: '1.1rem', 
+                  fontWeight: '600', 
+                  cursor: 'pointer' 
+                }}
+              >
+                Calculate My Plan
+              </button>
+            </form>
+          </div>
+
+          {/* Results */}
+          {result && (
+            <div>
+              {/* Summary Cards */}
+              <div style={{ 
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '1rem',
+                marginBottom: '2rem'
+              }}>
+                <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', padding: '1.5rem', borderRadius: '12px' }}>
+                  <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>Altitude Change</div>
+                  <div style={{ fontSize: '2rem', fontWeight: 700, marginTop: '0.5rem' }}>{result.altitudeChange.toLocaleString()}</div>
+                  <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>feet</div>
+                </div>
+                
+                <div style={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white', padding: '1.5rem', borderRadius: '12px' }}>
+                  <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>Acclimation Time</div>
+                  <div style={{ fontSize: '2rem', fontWeight: 700, marginTop: '0.5rem' }}>{result.recommendedDays}</div>
+                  <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>days</div>
+                </div>
+                
+                <div style={{ background: `linear-gradient(135deg, ${result.riskColor} 0%, ${result.riskColor}cc 100%)`, color: 'white', padding: '1.5rem', borderRadius: '12px' }}>
+                  <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>Risk Level</div>
+                  <div style={{ fontSize: '2rem', fontWeight: 700, marginTop: '0.5rem' }}>{result.riskLevel}</div>
+                  <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>altitude sickness</div>
+                </div>
+              </div>
+
+              {/* Detailed Plan */}
+              <div style={{ background: 'white', padding: '2rem', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', marginBottom: '2rem' }}>
+                <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', color: '#1f2937' }}>Your Acclimation Timeline</h2>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+                  <div style={{ padding: '1rem', background: '#fef3c7', borderRadius: '8px', border: '2px solid #f59e0b' }}>
+                    <div style={{ fontWeight: 600, color: '#92400e', marginBottom: '0.5rem' }}>⚠️ First Light Activity</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#78350f' }}>Day {result.firstActivity}</div>
+                  </div>
+                  
+                  <div style={{ padding: '1rem', background: '#dbeafe', borderRadius: '8px', border: '2px solid #3b82f6' }}>
+                    <div style={{ fontWeight: 600, color: '#1e40af', marginBottom: '0.5rem' }}>💪 Moderate Intensity</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e3a8a' }}>Day {result.moderateActivity}</div>
+                  </div>
+                  
+                  <div style={{ padding: '1rem', background: '#d1fae5', borderRadius: '8px', border: '2px solid #10b981' }}>
+                    <div style={{ fontWeight: 600, color: '#065f46', marginBottom: '0.5rem' }}>🎯 Full Intensity Ready</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#064e3b' }}>Day {result.fullIntensity}</div>
+                  </div>
+                </div>
+
+                {/* Day by Day Plan */}
+                <h3 style={{ fontSize: '1.3rem', marginBottom: '1rem', color: '#1f2937' }}>Day-by-Day Activity Guide</h3>
+                <div style={{ display: 'grid', gap: '1rem' }}>
+                  {getDayByDayPlan().map((day) => (
+                    <div key={day.day} style={{
+                      padding: '1rem',
+                      background: '#f9fafb',
+                      borderRadius: '8px',
+                      border: '2px solid #e5e7eb',
+                      display: 'flex',
+                      gap: '1rem',
+                      alignItems: 'start'
+                    }}>
+                      <div style={{
+                        width: '50px',
+                        height: '50px',
+                        background: day.intensity === 0 ? '#fee2e2' : day.intensity < 50 ? '#fef3c7' : day.intensity < 100 ? '#dbeafe' : '#d1fae5',
+                        color: day.intensity === 0 ? '#dc2626' : day.intensity < 50 ? '#f59e0b' : day.intensity < 100 ? '#3b82f6' : '#10b981',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 700,
+                        fontSize: '1.2rem',
+                        flexShrink: 0
+                      }}>
+                        {day.day}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600, fontSize: '1.1rem', marginBottom: '0.5rem', color: '#1f2937' }}>
+                          {day.activity}
+                        </div>
+                        <div style={{ 
+                          marginBottom: '0.75rem',
+                          background: '#e5e7eb',
+                          height: '8px',
+                          borderRadius: '4px',
+                          overflow: 'hidden'
+                        }}>
+                          <div style={{
+                            width: `${day.intensity}%`,
+                            height: '100%',
+                            background: day.intensity === 0 ? '#dc2626' : day.intensity < 50 ? '#f59e0b' : day.intensity < 100 ? '#3b82f6' : '#10b981',
+                            transition: 'width 0.3s'
+                          }}></div>
+                        </div>
+                        <ul style={{ margin: 0, paddingLeft: '1.5rem', fontSize: '0.9rem', color: '#6b7280' }}>
+                          {day.tips.map((tip, i) => (
+                            <li key={i}>{tip}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Hydration & Nutrition */}
+              <div style={{ background: 'white', padding: '2rem', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', marginBottom: '2rem' }}>
+                <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', color: '#1f2937' }}>💧 Hydration & Nutrition</h2>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                  <div style={{ padding: '1.5rem', background: '#eff6ff', borderRadius: '8px', border: '2px solid #3b82f6' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>💧</div>
+                    <div style={{ fontWeight: 600, fontSize: '1.1rem', color: '#1e40af', marginBottom: '0.5rem' }}>
+                      Daily Water Intake
+                    </div>
+                    <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '0.5rem' }}>
+                      {result.hydration}L
+                    </div>
+                    <div style={{ fontSize: '0.9rem', color: '#6b7280' }}>
+                      per day at {result.destAltitude.toLocaleString()} ft
+                    </div>
+                  </div>
+                  
+                  <div style={{ padding: '1.5rem', background: '#fef3c7', borderRadius: '8px', border: '2px solid #f59e0b' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🍽️</div>
+                    <div style={{ fontWeight: 600, fontSize: '1.1rem', color: '#92400e', marginBottom: '0.5rem' }}>
+                      Calorie Increase
+                    </div>
+                    <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#78350f', marginBottom: '0.5rem' }}>
+                      +{result.calorieIncrease}%
+                    </div>
+                    <div style={{ fontSize: '0.9rem', color: '#6b7280' }}>
+                      higher caloric needs
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#f0fdf4', borderRadius: '8px', border: '2px solid #10b981' }}>
+                  <h4 style={{ color: '#065f46', marginBottom: '0.75rem', fontSize: '1.1rem' }}>💡 Nutrition Tips</h4>
+                  <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#166534', lineHeight: 1.8 }}>
+                    <li>Eat smaller, more frequent meals to aid digestion</li>
+                    <li>Focus on complex carbohydrates for sustained energy</li>
+                    <li>Avoid heavy, fatty foods in the first few days</li>
+                    <li>Consider electrolyte supplements with increased hydration</li>
+                    <li>Limit caffeine and alcohol consumption</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Symptom Guide */}
+              <div style={{ background: 'white', padding: '2rem', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+                <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', color: '#1f2937' }}>🏥 Altitude Sickness Symptom Guide</h2>
+                
+                {(() => {
+                  const symptoms = getSymptomGuide();
+                  return (
+                    <div style={{ display: 'grid', gap: '1rem' }}>
+                      <div style={{ padding: '1.5rem', background: '#d1fae5', borderRadius: '8px', border: '2px solid #10b981' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                          <span style={{ fontSize: '1.5rem' }}>✅</span>
+                          <h3 style={{ fontSize: '1.2rem', color: '#065f46', margin: 0 }}>Normal Symptoms</h3>
+                        </div>
+                        <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#166534', lineHeight: 1.8 }}>
+                          {symptoms.normal.map((s, i) => <li key={i}>{s}</li>)}
+                        </ul>
+                      </div>
+                      
+                      <div style={{ padding: '1.5rem', background: '#fef3c7', borderRadius: '8px', border: '2px solid #f59e0b' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                          <span style={{ fontSize: '1.5rem' }}>⚠️</span>
+                          <h3 style={{ fontSize: '1.2rem', color: '#92400e', margin: 0 }}>Warning Signs - Take It Easy</h3>
+                        </div>
+                        <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#78350f', lineHeight: 1.8 }}>
+                          {symptoms.warning.map((s, i) => <li key={i}>{s}</li>)}
+                        </ul>
+                        <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#fde68a', borderRadius: '6px', fontSize: '0.9rem', color: '#92400e' }}>
+                          <strong>Action:</strong> Rest immediately, descend if symptoms worsen, increase hydration
+                        </div>
+                      </div>
+                      
+                      <div style={{ padding: '1.5rem', background: '#fee2e2', borderRadius: '8px', border: '2px solid #dc2626' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                          <span style={{ fontSize: '1.5rem' }}>🚨</span>
+                          <h3 style={{ fontSize: '1.2rem', color: '#991b1b', margin: 0 }}>Emergency - Seek Medical Help</h3>
+                        </div>
+                        <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#7f1d1d', lineHeight: 1.8, fontWeight: 600 }}>
+                          {symptoms.emergency.map((s, i) => <li key={i}>{s}</li>)}
+                        </ul>
+                        <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#fca5a5', borderRadius: '6px', fontSize: '0.9rem', color: '#7f1d1d', fontWeight: 600 }}>
+                          <strong>URGENT:</strong> Descend immediately and seek emergency medical care
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {!user && (
+                <div style={{ marginTop: '2rem', padding: '2rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius: '12px', textAlign: 'center', color: 'white' }}>
+                  <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Want to save your plan and track your progress?</h3>
+                  <p style={{ marginBottom: '1.5rem', opacity: 0.95 }}>Create a free account to save trips, get real-time acclimation tracking, and access advanced features.</p>
+                  <button
+                    onClick={() => router.push('/signin')}
+                    style={{
+                      background: 'white',
+                      color: '#2563eb',
+                      padding: '1rem 2rem',
+                      borderRadius: '8px',
+                      border: 'none',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      fontSize: '1.1rem'
+                    }}
+                  >
+                    Create Free Account
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        
+        {!result && (
+          <div style={{ marginTop: '40px', textAlign: 'center', color: '#6b7280' }}>
+            <p>Made with ❤️ at 10,152 feet in Leadville, Colorado</p>
           </div>
         )}
-        
-        <div style={{ marginTop: '40px', textAlign: 'center', color: '#6b7280' }}>
-          <p>Made with ❤️ at 10,152 feet in Leadville, Colorado</p>
-        </div>
       </div>
     </div>
   );
