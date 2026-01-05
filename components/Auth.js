@@ -3,7 +3,7 @@ import { signIn, signUp, signOut, confirmSignUp, fetchAuthSession } from 'aws-am
 import { getCityElevation, searchCities } from '../lib/cityElevations';
 
 export default function Auth({ onAuthSuccess }) {
-  const [mode, setMode] = useState('signin');
+  const [mode, setMode] = useState('signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
