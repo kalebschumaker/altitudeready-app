@@ -110,9 +110,6 @@ export default function Dashboard() {
     setSaving(false);
   };
 
-
-  };
-
   const handleDeleteTrip = async (tripId) => {
     if (!confirm('Are you sure you want to delete this trip?')) return;
 
