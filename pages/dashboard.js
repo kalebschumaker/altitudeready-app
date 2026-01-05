@@ -26,7 +26,7 @@ export default function Dashboard() {
     checkUser();
   }, []);
 
-    const checkUser = async () => {
+const checkUser = async () => {
     try {
       const currentUser = await getCurrentUser();
       const session = await fetchAuthSession();
@@ -36,19 +36,25 @@ export default function Dashboard() {
       setUserId(sub);
       
       if (sub) {
-        // Load user profile
-        const profileResponse = await getUserProfile(sub);
-        if (profileResponse.success && profileResponse.data) {
-          setUserProfile(profileResponse.data);
-          setHomeAltitude(profileResponse.data.homeAltitude?.toString() || '');
+        // Try to load user profile, but don't fail if it doesn't exist
+        try {
+          const profileResponse = await getUserProfile(sub);
+          if (profileResponse.success && profileResponse.data) {
+            setUserProfile(profileResponse.data);
+            setHomeAltitude(profileResponse.data.homeAltitude?.toString() || '');
+          }
+        } catch (profileError) {
+          console.log('No user profile found yet, will create on first trip');
+          // Profile doesn't exist yet - that's okay, we'll create it later
         }
         
         loadTrips(sub);
       }
+      setLoading(false);
     } catch (err) {
+      console.error('Auth check failed:', err);
       router.push('/signin');
     }
-    setLoading(false);
   };
 
  const [userProfile, setUserProfile] = useState(null);
