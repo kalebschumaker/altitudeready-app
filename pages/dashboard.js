@@ -73,7 +73,7 @@ export default function Dashboard() {
     }
   };
 
-const handleAddTrip = async (e) => {
+  const handleAddTrip = async (e) => {
     e.preventDefault();
     setSaving(true);
 
