@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 
 export default function Landing() {
   const [user, setUser] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -44,13 +45,21 @@ export default function Landing() {
             color: '#2563eb',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem'
-          }}>
+            gap: '0.5rem',
+            cursor: 'pointer'
+          }}
+          onClick={() => router.push('/')}>
             <span style={{ fontSize: '2rem' }}>⛰️</span>
             <span>AltitudeReady</span>
           </div>
           
-          <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+          {/* Desktop Navigation */}
+          <div style={{ 
+            display: 'flex', 
+            gap: '2rem', 
+            alignItems: 'center'
+          }}
+          className="desktop-nav">
             <a href="#features" style={{ color: '#1f2937', textDecoration: 'none', fontWeight: 500 }}>Features</a>
             <a href="#how-it-works" style={{ color: '#1f2937', textDecoration: 'none', fontWeight: 500 }}>How It Works</a>
             <a href="#pricing" style={{ color: '#1f2937', textDecoration: 'none', fontWeight: 500 }}>Pricing</a>
@@ -87,22 +96,98 @@ export default function Landing() {
               </button>
             )}
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '1.5rem',
+              cursor: 'pointer',
+              padding: '0.5rem',
+              display: 'none'
+            }}
+            className="mobile-menu-btn"
+          >
+            ☰
+          </button>
         </nav>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div style={{
+            background: 'white',
+            borderTop: '1px solid #e5e7eb',
+            padding: '1rem 2rem'
+          }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <a href="#features" onClick={() => setMobileMenuOpen(false)} style={{ color: '#1f2937', textDecoration: 'none', fontWeight: 500, padding: '0.5rem 0' }}>Features</a>
+              <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} style={{ color: '#1f2937', textDecoration: 'none', fontWeight: 500, padding: '0.5rem 0' }}>How It Works</a>
+              <a href="#pricing" onClick={() => setMobileMenuOpen(false)} style={{ color: '#1f2937', textDecoration: 'none', fontWeight: 500, padding: '0.5rem 0' }}>Pricing</a>
+              <a href="/calculator" onClick={() => setMobileMenuOpen(false)} style={{ color: '#1f2937', textDecoration: 'none', fontWeight: 500, padding: '0.5rem 0' }}>Calculator</a>
+              {user ? (
+                <button
+                  onClick={() => { setMobileMenuOpen(false); router.push('/dashboard'); }}
+                  style={{
+                    background: '#2563eb',
+                    color: 'white',
+                    padding: '0.75rem',
+                    borderRadius: '8px',
+                    border: 'none',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    width: '100%'
+                  }}
+                >
+                  Dashboard
+                </button>
+              ) : (
+                <button
+                  onClick={() => { setMobileMenuOpen(false); router.push('/signin'); }}
+                  style={{
+                    background: '#2563eb',
+                    color: 'white',
+                    padding: '0.75rem',
+                    borderRadius: '8px',
+                    border: 'none',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    width: '100%'
+                  }}
+                >
+                  Sign In
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </header>
+
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .desktop-nav {
+            display: none !important;
+          }
+          .mobile-menu-btn {
+            display: block !important;
+          }
+        }
+      `}</style>
 
       {/* Hero Section */}
       <section style={{
         marginTop: '80px',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         color: 'white',
-        padding: '6rem 2rem',
+        padding: '4rem 2rem',
         textAlign: 'center'
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h1 style={{ fontSize: '3rem', marginBottom: '1.5rem', fontWeight: 800 }}>
+          <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', marginBottom: '1.5rem', fontWeight: 800, lineHeight: 1.2 }}>
             Acclimate Smarter. Perform Better.
           </h1>
-          <p style={{ fontSize: '1.25rem', marginBottom: '2rem', opacity: 0.95 }}>
+          <p style={{ fontSize: 'clamp(1rem, 3vw, 1.25rem)', marginBottom: '2rem', opacity: 0.95 }}>
             Personalized altitude acclimation plans for mountain athletes, travelers, and adventurers. Science-backed guidance to help you thrive at elevation.
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -114,7 +199,7 @@ export default function Landing() {
                 padding: '1rem 2rem',
                 borderRadius: '8px',
                 border: 'none',
-                fontSize: '1.1rem',
+                fontSize: 'clamp(1rem, 2vw, 1.1rem)',
                 fontWeight: 600,
                 cursor: 'pointer'
               }}
@@ -129,7 +214,7 @@ export default function Landing() {
                 padding: '1rem 2rem',
                 borderRadius: '8px',
                 border: '2px solid white',
-                fontSize: '1.1rem',
+                fontSize: 'clamp(1rem, 2vw, 1.1rem)',
                 fontWeight: 600,
                 cursor: 'pointer'
               }}
@@ -143,10 +228,10 @@ export default function Landing() {
       {/* Features Section */}
       <section id="features" style={{ padding: '5rem 2rem', background: 'white' }}>
         <div style={{ maxWidth: '700px', margin: '0 auto 4rem', textAlign: 'center' }}>
-          <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>
+          <h2 style={{ fontSize: 'clamp(2rem, 5vw, 2.5rem)', marginBottom: '1rem' }}>
             Everything You Need to Thrive at Altitude
           </h2>
-          <p style={{ fontSize: '1.125rem', color: '#6b7280' }}>
+          <p style={{ fontSize: 'clamp(1rem, 2vw, 1.125rem)', color: '#6b7280' }}>
             Science-backed features designed to help you acclimate safely and perform at your best
           </p>
         </div>
@@ -155,7 +240,7 @@ export default function Landing() {
           maxWidth: '1200px',
           margin: '0 auto',
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: '2rem'
         }}>
           {[
@@ -181,8 +266,8 @@ export default function Landing() {
       {/* How It Works */}
       <section id="how-it-works" style={{ padding: '5rem 2rem', background: '#f9fafb' }}>
         <div style={{ maxWidth: '700px', margin: '0 auto 4rem', textAlign: 'center' }}>
-          <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>How It Works</h2>
-          <p style={{ fontSize: '1.125rem', color: '#6b7280' }}>Get altitude-ready in four simple steps</p>
+          <h2 style={{ fontSize: 'clamp(2rem, 5vw, 2.5rem)', marginBottom: '1rem' }}>How It Works</h2>
+          <p style={{ fontSize: 'clamp(1rem, 2vw, 1.125rem)', color: '#6b7280' }}>Get altitude-ready in four simple steps</p>
         </div>
         
         <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'grid', gap: '3rem' }}>
@@ -192,40 +277,40 @@ export default function Landing() {
             { num: '3', title: 'Track Your Progress', desc: 'Log symptoms, monitor vital signs, and track sleep quality with smart alerts.' },
             { num: '4', title: 'Perform Your Best', desc: 'Follow your personalized guidance to acclimate safely and reach full performance capacity.' }
           ].map((step, i) => (
-            <div key={i} style={{ display: 'flex', gap: '2rem', alignItems: 'start' }}>
+            <div key={i} style={{ display: 'flex', gap: '2rem', alignItems: 'start' }} className="step-container">
               <div style={{
                 background: '#2563eb',
                 color: 'white',
                 width: '60px',
                 height: '60px',
+                minWidth: '60px',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '1.5rem',
-                fontWeight: 700,
-                flexShrink: 0
+                fontWeight: 700
               }}>
                 {step.num}
               </div>
               <div>
-                <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{step.title}</h3>
-                <p style={{ color: '#6b7280' }}>{step.desc}</p>
+                <h3 style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', marginBottom: '0.5rem' }}>{step.title}</h3>
+                <p style={{ color: '#6b7280', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>{step.desc}</p>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Pricing */}
+      {/* Pricing - 2 TIERS ONLY */}
       <section id="pricing" style={{ padding: '5rem 2rem', background: 'white' }}>
         <div style={{ maxWidth: '700px', margin: '0 auto 4rem', textAlign: 'center' }}>
-          <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Simple, Transparent Pricing</h2>
-          <p style={{ fontSize: '1.125rem', color: '#6b7280' }}>Choose the plan that fits your mountain lifestyle</p>
+          <h2 style={{ fontSize: 'clamp(2rem, 5vw, 2.5rem)', marginBottom: '1rem' }}>Simple, Transparent Pricing</h2>
+          <p style={{ fontSize: 'clamp(1rem, 2vw, 1.125rem)', color: '#6b7280' }}>Choose the plan that fits your mountain lifestyle</p>
         </div>
         
         <div style={{
-          maxWidth: '1000px',
+          maxWidth: '900px',
           margin: '0 auto',
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -244,19 +329,13 @@ export default function Landing() {
               period: 'per month',
               featured: true,
               features: ['Personalized acclimation plans', 'Real-time symptom monitoring', 'Activity intensity guidance', 'Hydration & nutrition calculator', 'SpO2 & heart rate integration', 'Multi-location trip planning', 'Remove ads']
-            },
-            {
-              name: 'Athlete',
-              price: '$9.99',
-              period: 'per month',
-              features: ['Everything in Pro', 'Advanced performance metrics', 'Training block builder', 'Pre-acclimation protocols', 'Race-day optimization', 'Coach collaboration tools', 'Priority support']
             }
           ].map((plan, i) => (
             <div key={i} style={{
               background: 'white',
               border: plan.featured ? '3px solid #2563eb' : '2px solid #e5e7eb',
               borderRadius: '12px',
-              padding: '2.5rem',
+              padding: '2rem',
               textAlign: 'center',
               position: 'relative'
             }}>
@@ -271,21 +350,23 @@ export default function Landing() {
                   padding: '0.5rem 1rem',
                   borderRadius: '20px',
                   fontSize: '0.875rem',
-                  fontWeight: 600
+                  fontWeight: 600,
+                  whiteSpace: 'nowrap'
                 }}>
                   Most Popular
                 </div>
               )}
-              <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>{plan.name}</h3>
-              <div style={{ fontSize: '3rem', fontWeight: 700, color: '#2563eb', marginBottom: '0.5rem' }}>
+              <h3 style={{ fontSize: 'clamp(1.3rem, 3vw, 1.5rem)', marginBottom: '1rem' }}>{plan.name}</h3>
+              <div style={{ fontSize: 'clamp(2.5rem, 6vw, 3rem)', fontWeight: 700, color: '#2563eb', marginBottom: '0.5rem' }}>
                 {plan.price}
               </div>
-              <div style={{ color: '#6b7280', marginBottom: '2rem' }}>{plan.period}</div>
+              <div style={{ color: '#6b7280', marginBottom: '2rem', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>{plan.period}</div>
               <ul style={{ listStyle: 'none', marginBottom: '2rem', textAlign: 'left', padding: 0 }}>
                 {plan.features.map((feature, j) => (
                   <li key={j} style={{
                     padding: '0.75rem 0',
-                    borderBottom: '1px solid #f3f4f6'
+                    borderBottom: '1px solid #f3f4f6',
+                    fontSize: 'clamp(0.85rem, 2vw, 1rem)'
                   }}>
                     <span style={{ color: '#2563eb', fontWeight: 700, marginRight: '0.5rem' }}>✓</span>
                     {feature}
@@ -302,7 +383,8 @@ export default function Landing() {
                   border: `2px solid #2563eb`,
                   borderRadius: '8px',
                   fontWeight: 600,
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  fontSize: 'clamp(0.9rem, 2vw, 1rem)'
                 }}
               >
                 {plan.price === '$0' ? 'Get Started' : 'Start Free Trial'}
@@ -319,8 +401,8 @@ export default function Landing() {
         color: 'white',
         textAlign: 'center'
       }}>
-        <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Ready to Conquer the Mountains?</h2>
-        <p style={{ fontSize: '1.25rem', marginBottom: '2rem', opacity: 0.95 }}>
+        <h2 style={{ fontSize: 'clamp(2rem, 5vw, 2.5rem)', marginBottom: '1rem' }}>Ready to Conquer the Mountains?</h2>
+        <p style={{ fontSize: 'clamp(1rem, 3vw, 1.25rem)', marginBottom: '2rem', opacity: 0.95 }}>
           Join other athletes and adventurers who trust AltitudeReady for their high-altitude pursuits.
         </p>
         <button
@@ -331,7 +413,7 @@ export default function Landing() {
             padding: '1rem 2rem',
             borderRadius: '8px',
             border: 'none',
-            fontSize: '1.1rem',
+            fontSize: 'clamp(1rem, 2vw, 1.1rem)',
             fontWeight: 600,
             cursor: 'pointer'
           }}
@@ -346,33 +428,34 @@ export default function Landing() {
           maxWidth: '1200px',
           margin: '0 auto',
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
           gap: '2rem',
           marginBottom: '2rem'
         }}>
           <div>
             <h4 style={{ marginBottom: '1rem' }}>Product</h4>
-            <div><a href="#features" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Features</a></div>
-            <div><a href="#pricing" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Pricing</a></div>
-            <div><a href="/calculator" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Calculator</a></div>
+            <div style={{ marginBottom: '0.5rem' }}><a href="#features" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Features</a></div>
+            <div style={{ marginBottom: '0.5rem' }}><a href="#pricing" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Pricing</a></div>
+            <div><a href="/calculator" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Calculator</a></div>
           </div>
           <div>
             <h4 style={{ marginBottom: '1rem' }}>Company</h4>
-            <div><a href="#" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>About Us</a></div>
-            <div><a href="#" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Contact</a></div>
+            <div style={{ marginBottom: '0.5rem' }}><a href="#" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>About Us</a></div>
+            <div><a href="#" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Contact</a></div>
           </div>
           <div>
             <h4 style={{ marginBottom: '1rem' }}>Legal</h4>
-            <div><a href="#" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Privacy Policy</a></div>
-            <div><a href="#" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Terms of Service</a></div>
-            <div><a href="#" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Medical Disclaimer</a></div>
+            <div style={{ marginBottom: '0.5rem' }}><a href="#" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Privacy Policy</a></div>
+            <div style={{ marginBottom: '0.5rem' }}><a href="#" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Terms of Service</a></div>
+            <div><a href="#" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Medical Disclaimer</a></div>
           </div>
         </div>
         <div style={{
           textAlign: 'center',
           paddingTop: '2rem',
           borderTop: '1px solid rgba(255,255,255,0.1)',
-          color: 'rgba(255,255,255,0.7)'
+          color: 'rgba(255,255,255,0.7)',
+          fontSize: 'clamp(0.8rem, 2vw, 1rem)'
         }}>
           <p>&copy; 2026 AltitudeReady. All rights reserved. Made with ❤️ at 10,152 feet.</p>
         </div>
