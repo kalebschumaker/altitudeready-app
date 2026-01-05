@@ -206,21 +206,24 @@ export default function Landing() {
             >
               Try Calculator
             </button>
-            <button
-              onClick={() => router.push('/signin')}
-              style={{
-                background: 'transparent',
-                color: 'white',
-                padding: '1rem 2rem',
-                borderRadius: '8px',
-                border: '2px solid white',
-                fontSize: 'clamp(1rem, 2vw, 1.1rem)',
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}
-            >
-              Sign Up Free
-            </button>
+<button
+  onClick={() => {
+    router.push('/signin');
+    // This will be handled by the Auth component defaulting to signup mode
+  }}
+  style={{
+    background: 'transparent',
+    color: 'white',
+    padding: '1rem 2rem',
+    borderRadius: '8px',
+    border: '2px solid white',
+    fontSize: 'clamp(1rem, 2vw, 1.1rem)',
+    fontWeight: 600,
+    cursor: 'pointer'
+  }}
+>
+  Sign Up Free
+</button>
           </div>
         </div>
       </section>
