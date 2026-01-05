@@ -21,6 +21,10 @@ export default function Dashboard() {
   const [departureDate, setDepartureDate] = useState('');
   const [activityLevel, setActivityLevel] = useState('moderate');
   const [saving, setSaving] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editHomeCity, setEditHomeCity] = useState('');
+  const [editHomeAltitude, setEditHomeAltitude] = useState('');
 
   useEffect(() => {
     checkUser();
@@ -353,6 +357,44 @@ const checkUser = async () => {
             + Add Trip
           </button>
         </div>
+<div style={{ display: 'flex', gap: '1rem' }}>
+  <button
+    onClick={() => {
+      setEditName(userProfile?.name || '');
+      setEditHomeCity(userProfile?.homeCity || '');
+      setEditHomeAltitude(userProfile?.homeAltitude?.toString() || '');
+      setShowEditProfile(true);
+    }}
+    style={{
+      background: 'white',
+      color: '#2563eb',
+      padding: '1rem 2rem',
+      borderRadius: '8px',
+      border: '2px solid #2563eb',
+      fontSize: '1.1rem',
+      fontWeight: 600,
+      cursor: 'pointer'
+    }}
+  >
+    ⚙️ Edit Profile
+  </button>
+  <button
+    onClick={() => setShowAddTrip(true)}
+    style={{
+      background: '#2563eb',
+      color: 'white',
+      padding: '1rem 2rem',
+      borderRadius: '8px',
+      border: 'none',
+      fontSize: '1.1rem',
+      fontWeight: 600,
+      cursor: 'pointer',
+      boxShadow: '0 4px 6px rgba(37, 99, 235, 0.3)'
+    }}
+  >
+    + Add Trip
+  </button>
+</div>
 
         {/* Stats Cards */}
         <div style={{
