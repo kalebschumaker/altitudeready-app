@@ -318,14 +318,24 @@ const checkUser = async () => {
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px 20px' }}>
         {/* Welcome Section */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '20px' }}>
-          <div>
-            <h1 style={{ fontSize: '2.5rem', color: '#1f2937', marginBottom: '10px' }}>
-              Welcome back! 👋
-            </h1>
-            <p style={{ fontSize: '1.2rem', color: '#6b7280' }}>
-              {user.signInDetails?.loginId || 'User'}
-            </p>
-          </div>
+<div>
+  <h1 style={{ fontSize: '2.5rem', color: '#1f2937', marginBottom: '10px' }}>
+    Welcome back! 👋
+  </h1>
+  {userProfile?.name && (
+    <p style={{ fontSize: '1.5rem', color: '#1f2937', fontWeight: 600, marginBottom: '5px' }}>
+      {userProfile.name}
+    </p>
+  )}
+  {userProfile?.homeCity && (
+    <p style={{ fontSize: '1.1rem', color: '#6b7280', marginBottom: '5px' }}>
+      📍 {userProfile.homeCity}
+    </p>
+  )}
+  <p style={{ fontSize: '1rem', color: '#9ca3af' }}>
+    {user.signInDetails?.loginId || 'User'}
+  </p>
+</div>
           <button
             onClick={() => setShowAddTrip(true)}
             style={{
