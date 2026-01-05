@@ -1,10 +1,37 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getCurrentUser, signOut } from 'aws-amplify/auth';
+import Auth from '../components/Auth';
 
 export default function Home() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [homeAlt, setHomeAlt] = useState('');
   const [destAlt, setDestAlt] = useState('');
   const [activityLevel, setActivityLevel] = useState('moderate');
   const [result, setResult] = useState(null);
+
+  useEffect(() => {
+    checkUser();
+  }, []);
+
+  const checkUser = async () => {
+    try {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+    } catch (err) {
+      setUser(null);
+    }
+    setLoading(false);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      setUser(null);
+    } catch (err) {
+      console.error('Error signing out:', err);
+    }
+  };
 
   const calculatePlan = async (e) => {
     e.preventDefault();
@@ -22,11 +49,47 @@ export default function Home() {
     });
   };
 
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '100px 20px' }}>
+        <h2>Loading...</h2>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+        <div style={{ textAlign: 'center', paddingTop: '40px', color: 'white' }}>
+          <h1 style={{ fontSize: '3rem', marginBottom: '10px' }}>⛰️ AltitudeReady</h1>
+          <p style={{ fontSize: '1.2rem' }}>Smart Acclimation for Mountain Athletes</p>
+        </div>
+        <Auth onAuthSuccess={checkUser} />
+      </div>
+    );
+  }
+
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <h1 style={{ fontSize: '3rem', color: '#2563eb', marginBottom: '10px' }}>⛰️ AltitudeReady</h1>
-        <p style={{ fontSize: '1.2rem', color: '#6b7280' }}>Smart Acclimation Calculator</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+        <div style={{ textAlign: 'center', flex: 1 }}>
+          <h1 style={{ fontSize: '3rem', color: '#2563eb', marginBottom: '10px' }}>⛰️ AltitudeReady</h1>
+          <p style={{ fontSize: '1.2rem', color: '#6b7280' }}>Welcome, {user.signInDetails?.loginId || 'User'}!</p>
+        </div>
+        <button 
+          onClick={handleSignOut}
+          style={{
+            padding: '10px 20px',
+            background: 'white',
+            border: '2px solid #2563eb',
+            color: '#2563eb',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontWeight: '600'
+          }}
+        >
+          Sign Out
+        </button>
       </div>
 
       <form onSubmit={calculatePlan} style={{ background: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
