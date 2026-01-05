@@ -323,18 +323,21 @@ export default function Calculator() {
             
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
-                Current Fitness Level
+                Home Altitude (feet)
               </label>
-              <select 
-                value={fitnessLevel}
-                onChange={(e) => setFitnessLevel(e.target.value)}
+              <input 
+                type="number" 
+                value={homeAlt}
+                onChange={(e) => setHomeAlt(e.target.value)}
+                required
+                placeholder={userProfile?.homeAltitude ? `${userProfile.homeAltitude} (${userProfile.homeCity})` : "e.g., 500"}
                 style={{ width: '100%', padding: 'clamp(10px, 2vw, 12px)', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}
-              >
-                <option value="beginner">Beginner (Little regular exercise)</option>
-                <option value="average">Average (Exercise 1-2x per week)</option>
-                <option value="fit">Fit (Exercise 3-4x per week)</option>
-                <option value="athlete">Athlete (Daily training)</option>
-              </select>
+              />
+              {userProfile?.homeCity && (
+                <p style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', color: '#6b7280', marginTop: '0.5rem' }}>
+                  ✓ Using your home city: {userProfile.homeCity} ({userProfile.homeAltitude?.toLocaleString()} ft)
+                </p>
+              )}
             </div>
             
             <div style={{ marginBottom: '20px' }}>
@@ -349,6 +352,22 @@ export default function Calculator() {
                 placeholder="e.g., 10000"
                 style={{ width: '100%', padding: 'clamp(10px, 2vw, 12px)', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}
               />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
+                Current Fitness Level
+              </label>
+              <select 
+                value={fitnessLevel}
+                onChange={(e) => setFitnessLevel(e.target.value)}
+                style={{ width: '100%', padding: 'clamp(10px, 2vw, 12px)', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}
+              >
+                <option value="beginner">Beginner (Little regular exercise)</option>
+                <option value="average">Average (Exercise 1-2x per week)</option>
+                <option value="fit">Fit (Exercise 3-4x per week)</option>
+                <option value="athlete">Athlete (Daily training)</option>
+              </select>
             </div>
             
             <div style={{ marginBottom: '25px' }}>
