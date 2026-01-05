@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { getCurrentUser } from 'aws-amplify/auth';
+import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 import { useRouter } from 'next/router';
+import { getUserProfile } from '../lib/api';
 
 export default function Calculator() {
   const [user, setUser] = useState(null);
@@ -19,11 +20,28 @@ export default function Calculator() {
     try {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
+      
+      // Load user profile and auto-fill home altitude
+      const session = await fetchAuthSession();
+      const userId = session.tokens?.idToken?.payload?.sub;
+      
+      if (userId) {
+        const profileResponse = await getUserProfile(userId);
+        if (profileResponse.success && profileResponse.data) {
+          setUserProfile(profileResponse.data);
+          // Auto-fill home altitude from profile
+          if (profileResponse.data.homeAltitude) {
+            setHomeAlt(profileResponse.data.homeAltitude.toString());
+          }
+        }
+      }
     } catch (err) {
       setUser(null);
     }
   };
 
+  const [userProfile, setUserProfile] = useState(null);
+  
   const calculatePlan = async (e) => {
     e.preventDefault();
     
