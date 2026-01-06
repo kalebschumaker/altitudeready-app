@@ -231,7 +231,7 @@ export default function Dashboard() {
           boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
           marginBottom: '2rem'
         }}>
-          <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: '#1f2937' }}>Welcome back! 👋</h1>
+          <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: '#1f2937' }}>Welcome Back! 👋</h1>
           {userProfile?.name && (
             <p style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.5rem', color: '#2563eb' }}>
               {userProfile.name}
