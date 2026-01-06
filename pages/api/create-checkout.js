@@ -1,14 +1,31 @@
-import Stripe from 'stripe';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
+  // Add CORS headers
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Debug logging
+  console.log('STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY);
+  console.log('Request body:', req.body);
+
   try {
     const { priceId, userId, userEmail } = req.body;
+
+    if (!priceId) {
+      return res.status(400).json({ error: 'Missing priceId' });
+    }
 
     // Determine if it's a subscription or one-time payment
     const isSubscription = priceId.includes('month') || priceId.includes('year');
@@ -47,8 +64,12 @@ export default async function handler(req, res) {
       }
     }
 
+    console.log('Creating Stripe session with config:', sessionConfig);
+
     // Create Checkout Session
     const session = await stripe.checkout.sessions.create(sessionConfig);
+
+    console.log('Stripe session created:', session.id);
 
     res.status(200).json({ sessionId: session.id, url: session.url });
   } catch (err) {
