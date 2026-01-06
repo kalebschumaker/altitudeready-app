@@ -789,7 +789,7 @@ export default function Calculator() {
                   
                   {/* CamelBak Affiliate Link */}
                   <a 
-                    href="https://www.amazon.com/s?k=camelbak+water+bottle&tag=cctllc01-20" 
+                    href="https://www.amazon.com/s?k=water+bottle&tag=cctllc01-20" 
                     target="_blank" 
                     rel="noopener noreferrer sponsored"
                     style={{
@@ -815,7 +815,7 @@ export default function Calculator() {
                       e.currentTarget.style.color = '#2563eb';
                     }}
                   >
-                    🎒 Shop CamelBak Bottles →
+                    🎒 Shop Water Bottles →
                   </a>
                 </div>
                 
@@ -834,7 +834,7 @@ export default function Calculator() {
                   
                   {/* ProBar Affiliate Link */}
                   <a 
-                    href="https://www.amazon.com/s?k=probar+energy+bars&tag=cctllc01-20" 
+                    href="https://www.amazon.com/s?k=energy+bars&tag=cctllc01-20" 
                     target="_blank" 
                     rel="noopener noreferrer sponsored"
                     style={{
@@ -860,7 +860,7 @@ export default function Calculator() {
                       e.currentTarget.style.color = '#f59e0b';
                     }}
                   >
-                    🍫 Shop ProBar Energy Bars →
+                    🍫 Shop Energy Bars →
                   </a>
                 </div>
               </div>
