@@ -1,3 +1,4 @@
+<meta name="google-adsense-account" content="ca-pub-2012944210056553">
 import { useState, useEffect, useRef } from 'react';
 import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 import { useRouter } from 'next/router';
