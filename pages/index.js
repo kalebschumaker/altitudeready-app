@@ -287,7 +287,7 @@ export default function Landing() {
           {[
             { num: '1', title: 'Enter Your Details', desc: 'Tell us your home altitude, destination, arrival date, and what activities you\'re planning.' },
             { num: '2', title: 'Get Your Custom Plan', desc: 'Receive a personalized day-by-day acclimation schedule with specific activity recommendations.' },
-            { num: '3', title: 'Track Your Progress', desc: 'Log symptoms, monitor vital signs, and track sleep quality with smart alerts.' },
+            { num: '3', title: 'Track Your Progress', desc: 'Follow symptoms, monitor vital signs, and track sleep quality to see how you are aclimating.' },
             { num: '4', title: 'Perform Your Best', desc: 'Follow your personalized guidance to acclimate safely and reach full performance capacity.' }
           ].map((step, i) => (
             <div key={i} style={{ display: 'flex', gap: '2rem', alignItems: 'start' }} className="step-container">
