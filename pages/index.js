@@ -330,7 +330,6 @@ export default function Landing() {
               name: 'Pro',
               price: '$0.99',
               period: 'per month',
-              featured: true,
               features: ['Basic acclimation calculator', 'General altitude tips', 'Unlimited Trips','Activity intensity guidance', 'Remove Ads']
             },
                         {
