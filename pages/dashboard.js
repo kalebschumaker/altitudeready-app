@@ -368,6 +368,20 @@ export default function Dashboard() {
               {userProfile.name}
             </p>
           )}
+  {userProfile?.subscriptionTier && userProfile.subscriptionTier !== 'free' && (
+  <div style={{
+    display: 'inline-block',
+    background: '#dbeafe',
+    color: '#1e40af',
+    padding: '0.5rem 1rem',
+    borderRadius: '20px',
+    fontSize: '0.9rem',
+    fontWeight: 600,
+    marginTop: '0.5rem'
+  }}>
+    {userProfile.subscriptionTier === 'lifetime' ? '⭐ Lifetime Member' : '✨ Pro Member'}
+  </div>
+)}
           {userProfile?.homeCity && (
             <p style={{ fontSize: 'clamp(0.95rem, 3vw, 1.1rem)', marginBottom: '0.5rem', color: '#6b7280' }}>
               📍 {userProfile.homeCity}
