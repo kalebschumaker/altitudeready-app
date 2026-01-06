@@ -91,7 +91,7 @@ export default function Landing() {
               </button>
             ) : (
               <button
-                onClick={() => router.push('/signin')}
+                onClick={() => router.push('/auth/signin')}
                 style={{
                   background: '#2563eb',
                   color: 'white',
