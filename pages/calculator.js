@@ -1,10 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { searchLocations, getElevation } from '../lib/cityElevations';
-import { useState, useEffect } from 'react';
 import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 import { useRouter } from 'next/router';
 import { getUserProfile } from '../lib/api';
-import { searchLocations, getElevation, getPopularCitySuggestions, getPopularCityElevation } from '../lib/cityElevations';
+import { searchLocations, getElevation } from '../lib/cityElevations';
 
 export default function Calculator() {
   const [user, setUser] = useState(null);
@@ -22,6 +20,10 @@ export default function Calculator() {
   const [result, setResult] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
+
+  // Refs for debounce timers
+  const homeTimerRef = useRef(null);
+  const destTimerRef = useRef(null);
 
   useEffect(() => {
     checkUser();
@@ -50,14 +52,9 @@ export default function Calculator() {
     }
   };
 
-  // Debounce timer refs
-  const homeTimerRef = useRef(null);
-  const destTimerRef = useRef(null);
-
   const handleHomeLocationChange = (value) => {
     setHomeLocation(value);
     
-    // Clear existing timer
     if (homeTimerRef.current) {
       clearTimeout(homeTimerRef.current);
     }
@@ -67,13 +64,11 @@ export default function Calculator() {
       return;
     }
     
-    // Set loading state
     setHomeLoading(true);
     
-    // Debounce API call by 400ms
     homeTimerRef.current = setTimeout(async () => {
       const results = await searchLocations(value);
-      setHomeSuggestions(results.slice(0, 3)); // Show top 3
+      setHomeSuggestions(results.slice(0, 3));
       setHomeLoading(false);
     }, 400);
   };
@@ -93,7 +88,6 @@ export default function Calculator() {
   const handleDestLocationChange = (value) => {
     setDestLocation(value);
     
-    // Clear existing timer
     if (destTimerRef.current) {
       clearTimeout(destTimerRef.current);
     }
@@ -103,13 +97,11 @@ export default function Calculator() {
       return;
     }
     
-    // Set loading state
     setDestLoading(true);
     
-    // Debounce API call by 400ms
     destTimerRef.current = setTimeout(async () => {
       const results = await searchLocations(value);
-      setDestSuggestions(results.slice(0, 3)); // Show top 3
+      setDestSuggestions(results.slice(0, 3));
       setDestLoading(false);
     }, 400);
   };
@@ -125,111 +117,6 @@ export default function Calculator() {
     }
     setDestLoading(false);
   };
-
-  // Add useRef import at the top
-  // ... rest of your code stays the same
-
-  const handleHomeLocationChange = async (value) => {
-    setHomeLocation(value);
-    
-    // Clear previous timeout
-    if (homeSearchTimeout) {
-      clearTimeout(homeSearchTimeout);
-    }
-    
-    if (value.length < 3) {
-      setHomeSuggestions([]);
-      return;
-    }
-    
-    // First, show popular cities instantly
-    const popularSuggestions = getPopularCitySuggestions(value);
-    if (popularSuggestions.length > 0) {
-      setHomeSuggestions(popularSuggestions);
-    }
-    
-    // Then search API with debounce
-    homeSearchTimeout = setTimeout(async () => {
-      setHomeSearching(true);
-      const apiResults = await searchLocations(value);
-      
-      // Combine popular cities with API results
-      const combined = [...popularSuggestions, ...apiResults.slice(0, 5)];
-      setHomeSuggestions(combined);
-      setHomeSearching(false);
-    }, 500); // Wait 500ms after user stops typing
-  };
-
-  const handleHomeLocationSelect = async (location) => {
-    setHomeLocation(location.displayName);
-    setHomeSuggestions([]);
-    
-    // If it's a popular city, use the stored elevation
-    if (location.isPopular) {
-      setHomeAlt(location.elevation.toString());
-    } else {
-      // Fetch elevation from API
-      setHomeSearching(true);
-      const elevation = await getElevation(location.latitude, location.longitude);
-      setHomeSearching(false);
-      
-      if (elevation) {
-        setHomeAlt(elevation.toString());
-      }
-    }
-  };
-
-  const handleDestLocationChange = async (value) => {
-    setDestLocation(value);
-    
-    // Clear previous timeout
-    if (destSearchTimeout) {
-      clearTimeout(destSearchTimeout);
-    }
-    
-    if (value.length < 3) {
-      setDestSuggestions([]);
-      return;
-    }
-    
-    // First, show popular cities instantly
-    const popularSuggestions = getPopularCitySuggestions(value);
-    if (popularSuggestions.length > 0) {
-      setDestSuggestions(popularSuggestions);
-    }
-    
-    // Then search API with debounce
-    destSearchTimeout = setTimeout(async () => {
-      setDestSearching(true);
-      const apiResults = await searchLocations(value);
-      
-      // Combine popular cities with API results
-      const combined = [...popularSuggestions, ...apiResults.slice(0, 5)];
-      setDestSuggestions(combined);
-      setDestSearching(false);
-    }, 500);
-  };
-
-  const handleDestLocationSelect = async (location) => {
-    setDestLocation(location.displayName);
-    setDestSuggestions([]);
-    
-    // If it's a popular city, use the stored elevation
-    if (location.isPopular) {
-      setDestAlt(location.elevation.toString());
-    } else {
-      // Fetch elevation from API
-      setDestSearching(true);
-      const elevation = await getElevation(location.latitude, location.longitude);
-      setDestSearching(false);
-      
-      if (elevation) {
-        setDestAlt(elevation.toString());
-      }
-    }
-  };
-
-  // ... keep all your other functions (calculatePlan, getDayByDayPlan, etc.) the same
 
   const calculatePlan = async (e) => {
     e.preventDefault();
@@ -295,6 +182,9 @@ export default function Calculator() {
       }
     }, 100);
   };
+
+  // Keep all your other functions (getDayByDayPlan, getSymptomGuide) exactly as they were
+  // Then continue with the return statement and JSX
 
   const getDayByDayPlan = () => {
     if (!result) return [];
