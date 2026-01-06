@@ -24,6 +24,11 @@ export default function Pricing() {
   };
 
 const handleCheckout = async (priceId, planName) => {
+  console.log('=== CHECKOUT DEBUG ===');
+  console.log('User object:', user);
+  console.log('Price ID:', priceId);
+  console.log('Plan name:', planName);
+  
   setLoading(true);
 
   try {
@@ -32,9 +37,14 @@ const handleCheckout = async (priceId, planName) => {
 
     // Check if user is logged in
     if (user) {
+      console.log('User is logged in');
       userId = user.userId;
       userEmail = user.signInDetails?.loginId;
+    } else {
+      console.log('User is NOT logged in - proceeding with guest checkout');
     }
+
+    console.log('Calling API with:', { priceId, userId, userEmail });
 
     // Create checkout session (works for both logged in and guest users)
     const response = await fetch('/api/create-checkout', {
@@ -44,18 +54,25 @@ const handleCheckout = async (priceId, planName) => {
       },
       body: JSON.stringify({
         priceId: priceId,
-        userId: userId, // Will be null for guests
-        userEmail: userEmail, // Will be null for guests
+        userId: userId,
+        userEmail: userEmail,
       }),
     });
 
-    const { url } = await response.json();
+    console.log('API Response status:', response.status);
+    const data = await response.json();
+    console.log('API Response data:', data);
 
-    // Redirect to Stripe Checkout
-    window.location.href = url;
+    if (data.url) {
+      console.log('Redirecting to Stripe:', data.url);
+      window.location.href = data.url;
+    } else {
+      console.error('No URL returned from API');
+      alert('Error: No checkout URL received');
+    }
   } catch (error) {
-    console.error('Error:', error);
-    alert('Error creating checkout session');
+    console.error('Checkout error:', error);
+    alert('Error creating checkout session: ' + error.message);
     setLoading(false);
   }
 };
