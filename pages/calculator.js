@@ -651,10 +651,241 @@ export default function Calculator() {
         </div>
 
         {/* Results section - Keep everything else the same from the original file */}
-        {result && (
+{result && (
           <div id="results-section" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            {/* Copy all the results sections from your original file here */}
-            {/* I'm keeping this part exactly as you had it */}
+            {/* Summary Cards */}
+            <div style={{ 
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+              gap: '1rem',
+              marginBottom: '2rem'
+            }}>
+              <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', padding: 'clamp(1.2rem, 3vw, 1.5rem)', borderRadius: '12px' }}>
+                <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', opacity: 0.9 }}>Altitude Change</div>
+                <div style={{ fontSize: 'clamp(1.8rem, 4vw, 2rem)', fontWeight: 700, marginTop: '0.5rem' }}>{result.altitudeChange.toLocaleString()}</div>
+                <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', opacity: 0.9 }}>feet</div>
+                {result.homeLocation && result.destLocation && (
+                  <div style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', marginTop: '0.5rem', opacity: 0.8 }}>
+                    {result.homeLocation} → {result.destLocation}
+                  </div>
+                )}
+              </div>
+              
+              <div style={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white', padding: 'clamp(1.2rem, 3vw, 1.5rem)', borderRadius: '12px' }}>
+                <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', opacity: 0.9 }}>Acclimation Time</div>
+                <div style={{ fontSize: 'clamp(1.8rem, 4vw, 2rem)', fontWeight: 700, marginTop: '0.5rem' }}>{result.recommendedDays}</div>
+                <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', opacity: 0.9 }}>days</div>
+              </div>
+              
+              <div style={{ background: `linear-gradient(135deg, ${result.riskColor} 0%, ${result.riskColor}cc 100%)`, color: 'white', padding: 'clamp(1.2rem, 3vw, 1.5rem)', borderRadius: '12px' }}>
+                <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', opacity: 0.9 }}>Risk Level</div>
+                <div style={{ fontSize: 'clamp(1.8rem, 4vw, 2rem)', fontWeight: 700, marginTop: '0.5rem' }}>{result.riskLevel}</div>
+                <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', opacity: 0.9 }}>altitude sickness</div>
+              </div>
+            </div>
+
+            {/* Acclimation Timeline */}
+            <div style={{ background: 'white', padding: 'clamp(1.5rem, 4vw, 2rem)', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', marginBottom: '2rem' }}>
+              <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 1.8rem)', marginBottom: '1.5rem', color: '#1f2937' }}>Your Acclimation Timeline</h2>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+                <div style={{ padding: '1rem', background: '#fef3c7', borderRadius: '8px', border: '2px solid #f59e0b' }}>
+                  <div style={{ fontWeight: 600, color: '#92400e', marginBottom: '0.5rem', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>⚠️ First Light Activity</div>
+                  <div style={{ fontSize: 'clamp(1.3rem, 3vw, 1.5rem)', fontWeight: 700, color: '#78350f' }}>Day {result.firstActivity}</div>
+                </div>
+                
+                <div style={{ padding: '1rem', background: '#dbeafe', borderRadius: '8px', border: '2px solid #3b82f6' }}>
+                  <div style={{ fontWeight: 600, color: '#1e40af', marginBottom: '0.5rem', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>💪 Moderate Intensity</div>
+                  <div style={{ fontSize: 'clamp(1.3rem, 3vw, 1.5rem)', fontWeight: 700, color: '#1e3a8a' }}>Day {result.moderateActivity}</div>
+                </div>
+                
+                <div style={{ padding: '1rem', background: '#d1fae5', borderRadius: '8px', border: '2px solid #10b981' }}>
+                  <div style={{ fontWeight: 600, color: '#065f46', marginBottom: '0.5rem', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>🎯 Full Intensity Ready</div>
+                  <div style={{ fontSize: 'clamp(1.3rem, 3vw, 1.5rem)', fontWeight: 700, color: '#064e3b' }}>Day {result.fullIntensity}</div>
+                </div>
+              </div>
+
+              <h3 style={{ fontSize: 'clamp(1.2rem, 3vw, 1.3rem)', marginBottom: '1rem', color: '#1f2937' }}>Day-by-Day Activity Guide</h3>
+              <div style={{ display: 'grid', gap: '1rem' }}>
+                {getDayByDayPlan().map((day) => (
+                  <div key={day.day} style={{
+                    padding: 'clamp(0.8rem, 2vw, 1rem)',
+                    background: '#f9fafb',
+                    borderRadius: '8px',
+                    border: '2px solid #e5e7eb',
+                    display: 'flex',
+                    gap: '1rem',
+                    alignItems: 'start'
+                  }}>
+                    <div style={{
+                      width: 'clamp(40px, 10vw, 50px)',
+                      height: 'clamp(40px, 10vw, 50px)',
+                      minWidth: 'clamp(40px, 10vw, 50px)',
+                      background: day.intensity === 0 ? '#fee2e2' : day.intensity < 50 ? '#fef3c7' : day.intensity < 100 ? '#dbeafe' : '#d1fae5',
+                      color: day.intensity === 0 ? '#dc2626' : day.intensity < 50 ? '#f59e0b' : day.intensity < 100 ? '#3b82f6' : '#10b981',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 700,
+                      fontSize: 'clamp(1rem, 3vw, 1.2rem)'
+                    }}>
+                      {day.day}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, fontSize: 'clamp(1rem, 2.5vw, 1.1rem)', marginBottom: '0.5rem', color: '#1f2937' }}>
+                        {day.activity}
+                      </div>
+                      <div style={{ 
+                        marginBottom: '0.75rem',
+                        background: '#e5e7eb',
+                        height: '8px',
+                        borderRadius: '4px',
+                        overflow: 'hidden'
+                      }}>
+                        <div style={{
+                          width: `${day.intensity}%`,
+                          height: '100%',
+                          background: day.intensity === 0 ? '#dc2626' : day.intensity < 50 ? '#f59e0b' : day.intensity < 100 ? '#3b82f6' : '#10b981',
+                          transition: 'width 0.3s'
+                        }}></div>
+                      </div>
+                      <ul style={{ margin: 0, paddingLeft: '1.5rem', fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', color: '#6b7280' }}>
+                        {day.tips.map((tip, i) => (
+                          <li key={i}>{tip}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Hydration & Nutrition */}
+            <div style={{ background: 'white', padding: 'clamp(1.5rem, 4vw, 2rem)', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', marginBottom: '2rem' }}>
+              <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 1.8rem)', marginBottom: '1.5rem', color: '#1f2937' }}>💧 Hydration & Nutrition</h2>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
+                <div style={{ padding: '1.5rem', background: '#eff6ff', borderRadius: '8px', border: '2px solid #3b82f6' }}>
+                  <div style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', marginBottom: '1rem' }}>💧</div>
+                  <div style={{ fontWeight: 600, fontSize: 'clamp(1rem, 2vw, 1.1rem)', color: '#1e40af', marginBottom: '0.5rem' }}>
+                    Daily Water Intake
+                  </div>
+                  <div style={{ fontSize: 'clamp(2rem, 5vw, 2.5rem)', fontWeight: 700, color: '#1e3a8a', marginBottom: '0.5rem' }}>
+                    {result.hydration}L
+                  </div>
+                  <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', color: '#6b7280' }}>
+                    per day at {result.destAltitude.toLocaleString()} ft
+                  </div>
+                </div>
+                
+                <div style={{ padding: '1.5rem', background: '#fef3c7', borderRadius: '8px', border: '2px solid #f59e0b' }}>
+                  <div style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', marginBottom: '1rem' }}>🍽️</div>
+                  <div style={{ fontWeight: 600, fontSize: 'clamp(1rem, 2vw, 1.1rem)', color: '#92400e', marginBottom: '0.5rem' }}>
+                    Calorie Increase
+                  </div>
+                  <div style={{ fontSize: 'clamp(2rem, 5vw, 2.5rem)', fontWeight: 700, color: '#78350f', marginBottom: '0.5rem' }}>
+                    +{result.calorieIncrease}%
+                  </div>
+                  <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', color: '#6b7280' }}>
+                    higher caloric needs
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#f0fdf4', borderRadius: '8px', border: '2px solid #10b981' }}>
+                <h4 style={{ color: '#065f46', marginBottom: '0.75rem', fontSize: 'clamp(1rem, 2vw, 1.1rem)' }}>💡 Nutrition Tips</h4>
+                <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#166534', lineHeight: 1.8, fontSize: 'clamp(0.85rem, 2vw, 1rem)' }}>
+                  <li>Eat smaller, more frequent meals to aid digestion</li>
+                  <li>Focus on complex carbohydrates for sustained energy</li>
+                  <li>Avoid heavy, fatty foods in the first few days</li>
+                  <li>Consider electrolyte supplements with increased hydration</li>
+                  <li>Limit caffeine and alcohol consumption</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Symptom Guide */}
+            <div style={{ background: 'white', padding: 'clamp(1.5rem, 4vw, 2rem)', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', marginBottom: '2rem' }}>
+              <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 1.8rem)', marginBottom: '1.5rem', color: '#1f2937' }}>🏥 Altitude Sickness Symptom Guide</h2>
+              
+              {(() => {
+                const symptoms = getSymptomGuide();
+                return (
+                  <div style={{ display: 'grid', gap: '1rem' }}>
+                    <div style={{ padding: '1.5rem', background: '#d1fae5', borderRadius: '8px', border: '2px solid #10b981' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                        <span style={{ fontSize: '1.5rem' }}>✅</span>
+                        <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.2rem)', color: '#065f46', margin: 0 }}>Normal Symptoms</h3>
+                      </div>
+                      <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#166534', lineHeight: 1.8, fontSize: 'clamp(0.85rem, 2vw, 1rem)' }}>
+                        {symptoms.normal.map((s, i) => <li key={i}>{s}</li>)}
+                      </ul>
+                    </div>
+                    
+                    <div style={{ padding: '1.5rem', background: '#fef3c7', borderRadius: '8px', border: '2px solid #f59e0b' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                        <span style={{ fontSize: '1.5rem' }}>⚠️</span>
+                        <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.2rem)', color: '#92400e', margin: 0 }}>Warning Signs - Take It Easy</h3>
+                      </div>
+                      <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#78350f', lineHeight: 1.8, fontSize: 'clamp(0.85rem, 2vw, 1rem)' }}>
+                        {symptoms.warning.map((s, i) => <li key={i}>{s}</li>)}
+                      </ul>
+                      <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#fde68a', borderRadius: '6px', fontSize: 'clamp(0.85rem, 2vw, 0.9rem)', color: '#92400e' }}>
+                        <strong>Action:</strong> Rest immediately, descend if symptoms worsen, increase hydration
+                      </div>
+                    </div>
+                    
+                    <div style={{ padding: '1.5rem', background: '#fee2e2', borderRadius: '8px', border: '2px solid #dc2626' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                        <span style={{ fontSize: '1.5rem' }}>🚨</span>
+                        <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.2rem)', color: '#991b1b', margin: 0 }}>Emergency - Seek Medical Help</h3>
+                      </div>
+                      <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#7f1d1d', lineHeight: 1.8, fontWeight: 600, fontSize: 'clamp(0.85rem, 2vw, 1rem)' }}>
+                        {symptoms.emergency.map((s, i) => <li key={i}>{s}</li>)}
+                      </ul>
+                      <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#fca5a5', borderRadius: '6px', fontSize: 'clamp(0.85rem, 2vw, 0.9rem)', color: '#7f1d1d', fontWeight: 600 }}>
+                        <strong>URGENT:</strong> Descend immediately and seek emergency medical care
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Ad - Before sign up CTA */}
+            {!user && (
+              <div style={{ marginBottom: '2rem' }}>
+                <GoogleAd 
+                  slot="1122334455" 
+                  format="auto"
+                  style={{ minHeight: '250px' }}
+                />
+              </div>
+            )}
+
+            {/* Create Account CTA */}
+            {!user && (
+              <div style={{ marginTop: '2rem', padding: 'clamp(1.5rem, 4vw, 2rem)', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius: '12px', textAlign: 'center', color: 'white' }}>
+                <h3 style={{ fontSize: 'clamp(1.3rem, 4vw, 1.5rem)', marginBottom: '1rem' }}>Want to save your plan and track your progress?</h3>
+                <p style={{ marginBottom: '1.5rem', opacity: 0.95, fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Create a free account to save trips, get real-time acclimation tracking, and access advanced features.</p>
+                <button
+                  onClick={() => router.push('/signin')}
+                  style={{
+                    background: 'white',
+                    color: '#2563eb',
+                    padding: 'clamp(0.8rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                    borderRadius: '8px',
+                    border: 'none',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontSize: 'clamp(1rem, 2vw, 1.1rem)'
+                  }}
+                >
+                  Create Free Account
+                </button>
+              </div>
+            )}
           </div>
         )}
         
