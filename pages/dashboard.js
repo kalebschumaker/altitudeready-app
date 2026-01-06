@@ -65,6 +65,21 @@ export default function Dashboard() {
     setLoading(false);
   };
 
+const [expandedTrip, setExpandedTrip] = useState(null);
+
+const handleTripClick = (trip) => {
+  // Redirect to calculator with pre-filled data
+  router.push({
+    pathname: '/calculator',
+    query: {
+      homeAlt: trip.homeAltitude,
+      destAlt: trip.destinationAltitude,
+      destName: trip.destinationName
+    }
+  });
+};
+  
+  
   const handleAddTrip = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -370,6 +385,7 @@ const handleUpdateProfile = async (e) => {
 {trips.map((trip) => (
   <div 
     key={trip.tripId} 
+    onClick={() => handleTripClick(trip)}       
     style={{
       border: '2px solid #e5e7eb',
       borderRadius: '12px',
