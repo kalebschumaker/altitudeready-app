@@ -626,7 +626,7 @@ export default function Calculator() {
             </div>
           )}
         </div>
-        </div>
+        
 
         {/* Results section - keeping the same as before */}
         {result && (
