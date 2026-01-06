@@ -414,7 +414,7 @@ export default function Landing() {
                   fontSize: 'clamp(0.9rem, 2vw, 1rem)'
                 }}
               >
-                {plan.price === '$0' ? 'Get Started' : 'Start Free Trial'}
+                {plan.price === '$0' ? 'Get Started' : 'Purchase Now'}
               </button>
             </div>
           ))}
