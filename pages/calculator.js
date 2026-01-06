@@ -252,15 +252,15 @@ export default function Calculator() {
     cursor: 'pointer'
   }}
 >
-  <img 
-    src="/logo_notext.png" 
-    alt="AltitudeReady Logo" 
-    style={{ 
-      width: '40px', 
-      height: '40px',
-      objectFit: 'contain'
-    }} 
-  />
+<img 
+  src="/logo_notext.png" 
+  alt="AltitudeReady Logo" 
+  style={{ 
+    width: 'clamp(50px, 8vw, 70px)', 
+    height: 'clamp(50px, 8vw, 70px)',
+    objectFit: 'contain'
+  }} 
+/>
   <span>AltitudeReady</span>
 </div>
           
