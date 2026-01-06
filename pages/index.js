@@ -245,7 +245,7 @@ export default function Landing() {
             Everything You Need to Thrive at Altitude
           </h2>
           <p style={{ fontSize: 'clamp(1rem, 2vw, 1.125rem)', color: '#6b7280' }}>
-            Science-backed features designed to help you acclimate safely and perform at your best
+            Features designed to help you acclimate safely and perform at your best
           </p>
         </div>
         
