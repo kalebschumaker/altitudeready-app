@@ -320,7 +320,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing - 3 TIERS HORIZONTAL */}
+    {/* Pricing - 3 TIERS HORIZONTAL */}
       <section id="pricing" style={{ padding: '5rem 2rem', background: 'white' }}>
         <div style={{ maxWidth: '700px', margin: '0 auto 4rem', textAlign: 'center' }}>
           <h2 style={{ fontSize: 'clamp(2rem, 5vw, 2.5rem)', marginBottom: '1rem' }}>Simple, Transparent Pricing</h2>
@@ -400,24 +400,22 @@ export default function Landing() {
                   </li>
                 ))}
               </ul>
-<button
-  onClick={() => handleCheckout(plan.priceId, plan.name)}
-  disabled={loading || plan.price === '$0'}
-  style={{
-    width: '100%',
-    padding: '1rem',
-    background: plan.featured ? '#2563eb' : 'white',
-    color: plan.featured ? 'white' : '#2563eb',
-    border: `2px solid #2563eb`,
-    borderRadius: '8px',
-    fontWeight: 600,
-    cursor: (loading || plan.price === '$0') ? 'not-allowed' : 'pointer',
-    fontSize: '1rem',
-    opacity: (loading || plan.price === '$0') ? 0.7 : 1
-  }}
->
-  {loading ? 'Processing...' : (plan.price === '$0' ? 'Get Started Free' : 'Purchase Now')}
-</button>
+              <button
+                onClick={() => router.push(plan.price === '$0' ? '/auth/signin' : '/pricing')}
+                style={{
+                  width: '100%',
+                  padding: '1rem',
+                  background: plan.featured ? '#2563eb' : 'white',
+                  color: plan.featured ? 'white' : '#2563eb',
+                  border: `2px solid #2563eb`,
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontSize: 'clamp(0.9rem, 2vw, 1rem)'
+                }}
+              >
+                {plan.price === '$0' ? 'Get Started' : 'View Plans'}
+              </button>
             </div>
           ))}
         </div>
