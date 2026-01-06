@@ -241,20 +241,28 @@ export default function Calculator() {
           alignItems: 'center'
         }}>
           <div 
-            onClick={() => router.push('/')}
-            style={{
-              fontSize: '1.5rem',
-              fontWeight: 700,
-              color: '#2563eb',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              cursor: 'pointer'
-            }}
-          >
-            <span style={{ fontSize: '2rem' }}>⛰️</span>
-            <span>AltitudeReady</span>
-          </div>
+  onClick={() => router.push('/')}
+  style={{
+    fontSize: '1.5rem',
+    fontWeight: 700,
+    color: '#2563eb',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    cursor: 'pointer'
+  }}
+>
+  <img 
+    src="/logo_notext.png" 
+    alt="AltitudeReady Logo" 
+    style={{ 
+      width: '40px', 
+      height: '40px',
+      objectFit: 'contain'
+    }} 
+  />
+  <span>AltitudeReady</span>
+</div>
           
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }} className="desktop-nav">
             {user ? (
