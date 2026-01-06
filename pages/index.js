@@ -400,22 +400,24 @@ export default function Landing() {
                   </li>
                 ))}
               </ul>
-              <button
-                onClick={() => router.push('/signin')}
-                style={{
-                  width: '100%',
-                  padding: '1rem',
-                  background: plan.featured ? '#2563eb' : 'white',
-                  color: plan.featured ? 'white' : '#2563eb',
-                  border: `2px solid #2563eb`,
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontSize: 'clamp(0.9rem, 2vw, 1rem)'
-                }}
-              >
-                {plan.price === '$0' ? 'Get Started' : 'Purchase Now'}
-              </button>
+<button
+  onClick={() => handleCheckout(plan.priceId, plan.name)}
+  disabled={loading || plan.price === '$0'}
+  style={{
+    width: '100%',
+    padding: '1rem',
+    background: plan.featured ? '#2563eb' : 'white',
+    color: plan.featured ? 'white' : '#2563eb',
+    border: `2px solid #2563eb`,
+    borderRadius: '8px',
+    fontWeight: 600,
+    cursor: (loading || plan.price === '$0') ? 'not-allowed' : 'pointer',
+    fontSize: '1rem',
+    opacity: (loading || plan.price === '$0') ? 0.7 : 1
+  }}
+>
+  {loading ? 'Processing...' : (plan.price === '$0' ? 'Get Started Free' : 'Purchase Now')}
+</button>
             </div>
           ))}
         </div>
