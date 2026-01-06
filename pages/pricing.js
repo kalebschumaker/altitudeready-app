@@ -89,23 +89,14 @@ const handleCheckout = async (priceId, planName) => {
       name: 'Pro Monthly',
       price: '$0.99',
       period: 'per month',
-      priceId: 'price_YOUR_MONTHLY_PRICE_ID', // Replace with your actual Price ID
+      priceId: 'price_1SmhGbBuBTWWyHXeBZKuwYbS', // Replace with your actual Price ID
       features: ['Everything in Free', 'Unlimited Trips', 'Remove Ads', 'Priority Support'],
-    },
-    {
-      name: 'Pro Yearly',
-      price: '$9.99',
-      period: 'per year',
-      priceId: 'price_YOUR_YEARLY_PRICE_ID', // Replace with your actual Price ID
-      featured: true,
-      badge: 'Best Value',
-      features: ['Everything in Free', 'Unlimited Trips', 'Remove Ads', 'Priority Support', 'Save 17%'],
     },
     {
       name: 'Lifetime',
       price: '$10.00',
       period: 'one-time',
-      priceId: 'price_YOUR_LIFETIME_PRICE_ID', // Replace with your actual Price ID
+      priceId: 'price_1SmhHEBuBTWWyHXeHyqMbamU', // Replace with your actual Price ID
       features: ['Everything in Pro', 'Lifetime Access', 'All Future Features', 'VIP Support'],
     },
   ];
