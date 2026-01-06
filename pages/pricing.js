@@ -23,38 +23,42 @@ export default function Pricing() {
     }
   };
 
-  const handleCheckout = async (priceId, planName) => {
-    if (!user) {
-      router.push('/auth/signin');
-      return;
+const handleCheckout = async (priceId, planName) => {
+  setLoading(true);
+
+  try {
+    let userId = null;
+    let userEmail = null;
+
+    // Check if user is logged in
+    if (user) {
+      userId = user.userId;
+      userEmail = user.signInDetails?.loginId;
     }
 
-    setLoading(true);
+    // Create checkout session (works for both logged in and guest users)
+    const response = await fetch('/api/create-checkout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        priceId: priceId,
+        userId: userId, // Will be null for guests
+        userEmail: userEmail, // Will be null for guests
+      }),
+    });
 
-    try {
-      // Create checkout session
-      const response = await fetch('/api/create-checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          priceId: priceId,
-          userId: user.userId,
-          userEmail: user.signInDetails?.loginId,
-        }),
-      });
+    const { url } = await response.json();
 
-      const { url } = await response.json();
-
-      // Redirect to Stripe Checkout
-      window.location.href = url;
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error creating checkout session');
-      setLoading(false);
-    }
-  };
+    // Redirect to Stripe Checkout
+    window.location.href = url;
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error creating checkout session');
+    setLoading(false);
+  }
+};
 
   const plans = [
     {
