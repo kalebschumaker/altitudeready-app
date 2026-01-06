@@ -448,9 +448,9 @@ export default function Landing() {
           </div>
           <div>
             <h4 style={{ marginBottom: '1rem' }}>Legal</h4>
-            <div style={{ marginBottom: '0.5rem' }}><a href="#" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Privacy Policy</a></div>
-            <div style={{ marginBottom: '0.5rem' }}><a href="#" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Terms of Service</a></div>
-            <div><a href="#" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Medical Disclaimer</a></div>
+            <div style={{ marginBottom: '0.5rem' }}><a href="/legal" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Privacy Policy</a></div>
+            <div style={{ marginBottom: '0.5rem' }}><a href="/legal" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Terms of Service</a></div>
+            <div><a href="/legal" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Medical Disclaimer</a></div>
           </div>
         </div>
         <div style={{
