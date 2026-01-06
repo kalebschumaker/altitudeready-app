@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getCurrentUser, fetchAuthSession, signOut } from 'aws-amplify/auth';
 import { useRouter } from 'next/router';
 import { createTrip, getUserTrips, deleteTrip, getUserProfile, updateUserProfile } from '../lib/api';
+import { searchLocations, getElevation } from '../lib/cityElevations';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -22,6 +23,11 @@ export default function Dashboard() {
   const [arrivalDate, setArrivalDate] = useState('');
   const [departureDate, setDepartureDate] = useState('');
   const [activityLevel, setActivityLevel] = useState('moderate');
+  
+  // Location search for Add Trip
+  const [destSearchResults, setDestSearchResults] = useState([]);
+  const [destSearchLoading, setDestSearchLoading] = useState(false);
+  const destSearchTimerRef = useRef(null);
   
   // Edit profile form
   const [editName, setEditName] = useState('');
@@ -64,6 +70,40 @@ export default function Dashboard() {
       router.push('/auth/signin');
     }
     setLoading(false);
+  };
+
+  // Location search handlers
+  const handleDestinationSearch = (value) => {
+    setDestinationName(value);
+    
+    if (destSearchTimerRef.current) {
+      clearTimeout(destSearchTimerRef.current);
+    }
+    
+    if (value.length < 3) {
+      setDestSearchResults([]);
+      return;
+    }
+    
+    setDestSearchLoading(true);
+    
+    destSearchTimerRef.current = setTimeout(async () => {
+      const results = await searchLocations(value);
+      setDestSearchResults(results.slice(0, 5));
+      setDestSearchLoading(false);
+    }, 400);
+  };
+
+  const handleDestinationSelect = async (location) => {
+    setDestinationName(location.displayName);
+    setDestSearchResults([]);
+    setDestSearchLoading(true);
+    
+    const elevation = await getElevation(location.lat, location.lon);
+    if (elevation) {
+      setDestinationAltitude(elevation.toString());
+    }
+    setDestSearchLoading(false);
   };
 
   // Helper functions for expanded trip view
@@ -146,6 +186,7 @@ export default function Dashboard() {
         setArrivalDate('');
         setDepartureDate('');
         setActivityLevel('moderate');
+        setDestSearchResults([]);
       } else {
         alert(`Error creating trip: ${response.error || 'Unknown error'}`);
       }
@@ -268,8 +309,8 @@ export default function Dashboard() {
               src="/logo_notext.png" 
               alt="AltitudeReady Logo" 
               style={{ 
-                width: '45px', 
-                height: '45px',
+                width: 'clamp(50px, 8vw, 70px)', 
+                height: 'clamp(50px, 8vw, 70px)',
                 objectFit: 'contain'
               }} 
             />
@@ -428,7 +469,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Trips Section */}
+        {/* Trips Section - keeping as is from your original */}
         <div style={{ 
           background: 'white', 
           padding: 'clamp(1.5rem, 4vw, 2.5rem)', 
@@ -561,7 +602,7 @@ export default function Dashboard() {
                     </button>
                   </div>
 
-                  {/* Expanded Trip Details */}
+                  {/* Expanded Trip Details - keeping as is from your original */}
                   {expandedTrip === trip.tripId && (
                     <div style={{ 
                       marginTop: '1rem',
@@ -712,7 +753,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Add Trip Modal - Keep existing */}
+      {/* Add Trip Modal - UPDATED */}
       {showAddTrip && (
         <div style={{
           position: 'fixed',
@@ -725,21 +766,23 @@ export default function Dashboard() {
           justifyContent: 'center',
           alignItems: 'center',
           zIndex: 1000,
-          padding: '2rem'
+          padding: '1rem',
+          overflowY: 'auto'
         }}>
           <div style={{
             background: 'white',
             borderRadius: '16px',
-            padding: '2.5rem',
+            padding: 'clamp(1.5rem, 4vw, 2.5rem)',
             maxWidth: '600px',
             width: '100%',
             maxHeight: '90vh',
-            overflowY: 'auto'
+            overflowY: 'auto',
+            margin: 'auto'
           }}>
-            <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', color: '#1f2937' }}>Add New Trip</h2>
+            <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 1.8rem)', marginBottom: '1.5rem', color: '#1f2937' }}>Add New Trip</h2>
             <form onSubmit={handleAddTrip}>
               <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#374151' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#374151', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
                   Trip Name
                 </label>
                 <input
@@ -749,40 +792,80 @@ export default function Dashboard() {
                   placeholder="e.g., Colorado Ski Trip"
                   style={{
                     width: '100%',
-                    padding: '0.75rem',
+                    padding: 'clamp(0.65rem, 2vw, 0.75rem)',
                     border: '2px solid #e5e7eb',
                     borderRadius: '8px',
-                    fontSize: '1rem',
+                    fontSize: 'clamp(0.9rem, 2vw, 1rem)',
                     boxSizing: 'border-box'
                   }}
                 />
               </div>
 
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#374151' }}>
+              <div style={{ marginBottom: '1.25rem', position: 'relative' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#374151', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
                   Destination *
                 </label>
                 <input
                   type="text"
                   value={destinationName}
-                  onChange={(e) => setDestinationName(e.target.value)}
+                  onChange={(e) => handleDestinationSearch(e.target.value)}
                   required
-                  placeholder="e.g., Aspen, CO"
+                  placeholder="Type at least 3 characters..."
                   style={{
                     width: '100%',
-                    padding: '0.75rem',
+                    padding: 'clamp(0.65rem, 2vw, 0.75rem)',
                     border: '2px solid #e5e7eb',
                     borderRadius: '8px',
-                    fontSize: '1rem',
+                    fontSize: 'clamp(0.9rem, 2vw, 1rem)',
                     boxSizing: 'border-box'
                   }}
                 />
+                
+                {destSearchLoading && (
+                  <div style={{ padding: '10px', fontSize: '0.85rem', color: '#6b7280', fontStyle: 'italic' }}>
+                    Searching...
+                  </div>
+                )}
+                
+                {destSearchResults.length > 0 && !destSearchLoading && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    background: 'white',
+                    border: '2px solid #2563eb',
+                    borderRadius: '8px',
+                    marginTop: '4px',
+                    zIndex: 10,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    maxHeight: '200px',
+                    overflowY: 'auto'
+                  }}>
+                    {destSearchResults.map((location, i) => (
+                      <div
+                        key={i}
+                        onClick={() => handleDestinationSelect(location)}
+                        style={{
+                          padding: '12px',
+                          cursor: 'pointer',
+                          borderBottom: i < destSearchResults.length - 1 ? '1px solid #e5e7eb' : 'none',
+                          fontSize: 'clamp(0.85rem, 2vw, 0.95rem)'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = '#eff6ff'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                      >
+                        📍 {location.displayName}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#374151' }}>
-                    Home Altitude (ft) *
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#374151', fontSize: 'clamp(0.85rem, 2vw, 0.95rem)' }}>
+                    Home Alt (ft) *
                   </label>
                   <input
                     type="number"
@@ -792,31 +875,31 @@ export default function Dashboard() {
                     placeholder="500"
                     style={{
                       width: '100%',
-                      padding: '0.75rem',
+                      padding: 'clamp(0.65rem, 2vw, 0.75rem)',
                       border: '2px solid #e5e7eb',
                       borderRadius: '8px',
-                      fontSize: '1rem',
+                      fontSize: 'clamp(0.9rem, 2vw, 1rem)',
                       boxSizing: 'border-box'
                     }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#374151' }}>
-                    Destination Altitude (ft) *
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#374151', fontSize: 'clamp(0.85rem, 2vw, 0.95rem)' }}>
+                    Dest Alt (ft) *
                   </label>
                   <input
                     type="number"
                     value={destinationAltitude}
                     onChange={(e) => setDestinationAltitude(e.target.value)}
                     required
-                    placeholder="8000"
+                    placeholder="Auto-filled"
                     style={{
                       width: '100%',
-                      padding: '0.75rem',
+                      padding: 'clamp(0.65rem, 2vw, 0.75rem)',
                       border: '2px solid #e5e7eb',
                       borderRadius: '8px',
-                      fontSize: '1rem',
+                      fontSize: 'clamp(0.9rem, 2vw, 1rem)',
                       boxSizing: 'border-box'
                     }}
                   />
@@ -825,7 +908,7 @@ export default function Dashboard() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#374151' }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#374151', fontSize: 'clamp(0.85rem, 2vw, 0.95rem)' }}>
                     Arrival Date *
                   </label>
                   <input
@@ -835,17 +918,17 @@ export default function Dashboard() {
                     required
                     style={{
                       width: '100%',
-                      padding: '0.75rem',
+                      padding: 'clamp(0.65rem, 2vw, 0.75rem)',
                       border: '2px solid #e5e7eb',
                       borderRadius: '8px',
-                      fontSize: '1rem',
+                      fontSize: 'clamp(0.9rem, 2vw, 1rem)',
                       boxSizing: 'border-box'
                     }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#374151' }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#374151', fontSize: 'clamp(0.85rem, 2vw, 0.95rem)' }}>
                     Departure Date *
                   </label>
                   <input
@@ -855,10 +938,10 @@ export default function Dashboard() {
                     required
                     style={{
                       width: '100%',
-                      padding: '0.75rem',
+                      padding: 'clamp(0.65rem, 2vw, 0.75rem)',
                       border: '2px solid #e5e7eb',
                       borderRadius: '8px',
-                      fontSize: '1rem',
+                      fontSize: 'clamp(0.9rem, 2vw, 1rem)',
                       boxSizing: 'border-box'
                     }}
                   />
@@ -866,7 +949,7 @@ export default function Dashboard() {
               </div>
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#374151' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#374151', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
                   Activity Level *
                 </label>
                 <select
@@ -874,34 +957,38 @@ export default function Dashboard() {
                   onChange={(e) => setActivityLevel(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '0.75rem',
+                    padding: 'clamp(0.65rem, 2vw, 0.75rem)',
                     border: '2px solid #e5e7eb',
                     borderRadius: '8px',
-                    fontSize: '1rem',
+                    fontSize: 'clamp(0.9rem, 2vw, 1rem)',
                     boxSizing: 'border-box'
                   }}
                 >
-                  <option value="light">Light</option>
-                  <option value="moderate">Moderate</option>
-                  <option value="intense">Intense</option>
-                  <option value="extreme">Extreme</option>
+                  <option value="light">Light (walking, sightseeing)</option>
+                  <option value="moderate">Moderate (hiking, casual skiing)</option>
+                  <option value="intense">Intense (running, hard skiing)</option>
+                  <option value="extreme">Extreme (racing, mountaineering)</option>
                 </select>
               </div>
 
-              <div style={{ display: 'flex', gap: '1rem' }}>
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                 <button
                   type="button"
-                  onClick={() => setShowAddTrip(false)}
+                  onClick={() => {
+                    setShowAddTrip(false);
+                    setDestSearchResults([]);
+                  }}
                   style={{
                     flex: 1,
-                    padding: '0.75rem',
+                    minWidth: '120px',
+                    padding: 'clamp(0.65rem, 2vw, 0.75rem)',
                     background: 'white',
                     color: '#6b7280',
                     border: '2px solid #e5e7eb',
                     borderRadius: '8px',
                     fontWeight: 600,
                     cursor: 'pointer',
-                    fontSize: '1rem'
+                    fontSize: 'clamp(0.9rem, 2vw, 1rem)'
                   }}
                 >
                   Cancel
@@ -911,14 +998,15 @@ export default function Dashboard() {
                   disabled={saving}
                   style={{
                     flex: 1,
-                    padding: '0.75rem',
+                    minWidth: '120px',
+                    padding: 'clamp(0.65rem, 2vw, 0.75rem)',
                     background: '#2563eb',
                     color: 'white',
                     border: 'none',
                     borderRadius: '8px',
                     fontWeight: 600,
                     cursor: saving ? 'not-allowed' : 'pointer',
-                    fontSize: '1rem',
+                    fontSize: 'clamp(0.9rem, 2vw, 1rem)',
                     opacity: saving ? 0.7 : 1
                   }}
                 >
@@ -930,7 +1018,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Edit Profile Modal - Keep existing */}
+      {/* Edit Profile Modal - keeping as is */}
       {showEditProfile && (
         <div style={{
           position: 'fixed',
