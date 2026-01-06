@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 import { useRouter } from 'next/router';
 import { getUserProfile } from '../lib/api';
-import { getCityElevation, searchCities } from '../lib/cityElevations';
+import { searchLocations, getElevation, getPopularCitySuggestions, getPopularCityElevation } from '../lib/cityElevations';
 
 export default function Calculator() {
   const [user, setUser] = useState(null);
@@ -10,14 +10,19 @@ export default function Calculator() {
   const [homeLocation, setHomeLocation] = useState('');
   const [homeAlt, setHomeAlt] = useState('');
   const [homeSuggestions, setHomeSuggestions] = useState([]);
+  const [homeSearching, setHomeSearching] = useState(false);
   const [destLocation, setDestLocation] = useState('');
   const [destAlt, setDestAlt] = useState('');
   const [destSuggestions, setDestSuggestions] = useState([]);
+  const [destSearching, setDestSearching] = useState(false);
   const [activityLevel, setActivityLevel] = useState('moderate');
   const [fitnessLevel, setFitnessLevel] = useState('average');
   const [result, setResult] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
+
+  let homeSearchTimeout = null;
+  let destSearchTimeout = null;
 
   useEffect(() => {
     checkUser();
@@ -46,55 +51,107 @@ export default function Calculator() {
     }
   };
 
-  const handleHomeLocationChange = (value) => {
+  const handleHomeLocationChange = async (value) => {
     setHomeLocation(value);
     
-    const elevation = getCityElevation(value);
-    if (elevation) {
-      setHomeAlt(elevation.toString());
+    // Clear previous timeout
+    if (homeSearchTimeout) {
+      clearTimeout(homeSearchTimeout);
     }
     
-    if (value.length >= 2) {
-      const suggestions = searchCities(value);
-      setHomeSuggestions(suggestions);
-    } else {
+    if (value.length < 3) {
       setHomeSuggestions([]);
+      return;
     }
+    
+    // First, show popular cities instantly
+    const popularSuggestions = getPopularCitySuggestions(value);
+    if (popularSuggestions.length > 0) {
+      setHomeSuggestions(popularSuggestions);
+    }
+    
+    // Then search API with debounce
+    homeSearchTimeout = setTimeout(async () => {
+      setHomeSearching(true);
+      const apiResults = await searchLocations(value);
+      
+      // Combine popular cities with API results
+      const combined = [...popularSuggestions, ...apiResults.slice(0, 5)];
+      setHomeSuggestions(combined);
+      setHomeSearching(false);
+    }, 500); // Wait 500ms after user stops typing
   };
 
-  const handleHomeLocationSelect = (city) => {
-    setHomeLocation(city);
-    const elevation = getCityElevation(city);
-    if (elevation) {
-      setHomeAlt(elevation.toString());
-    }
+  const handleHomeLocationSelect = async (location) => {
+    setHomeLocation(location.displayName);
     setHomeSuggestions([]);
+    
+    // If it's a popular city, use the stored elevation
+    if (location.isPopular) {
+      setHomeAlt(location.elevation.toString());
+    } else {
+      // Fetch elevation from API
+      setHomeSearching(true);
+      const elevation = await getElevation(location.latitude, location.longitude);
+      setHomeSearching(false);
+      
+      if (elevation) {
+        setHomeAlt(elevation.toString());
+      }
+    }
   };
 
-  const handleDestLocationChange = (value) => {
+  const handleDestLocationChange = async (value) => {
     setDestLocation(value);
     
-    const elevation = getCityElevation(value);
-    if (elevation) {
-      setDestAlt(elevation.toString());
+    // Clear previous timeout
+    if (destSearchTimeout) {
+      clearTimeout(destSearchTimeout);
     }
     
-    if (value.length >= 2) {
-      const suggestions = searchCities(value);
-      setDestSuggestions(suggestions);
-    } else {
+    if (value.length < 3) {
       setDestSuggestions([]);
+      return;
+    }
+    
+    // First, show popular cities instantly
+    const popularSuggestions = getPopularCitySuggestions(value);
+    if (popularSuggestions.length > 0) {
+      setDestSuggestions(popularSuggestions);
+    }
+    
+    // Then search API with debounce
+    destSearchTimeout = setTimeout(async () => {
+      setDestSearching(true);
+      const apiResults = await searchLocations(value);
+      
+      // Combine popular cities with API results
+      const combined = [...popularSuggestions, ...apiResults.slice(0, 5)];
+      setDestSuggestions(combined);
+      setDestSearching(false);
+    }, 500);
+  };
+
+  const handleDestLocationSelect = async (location) => {
+    setDestLocation(location.displayName);
+    setDestSuggestions([]);
+    
+    // If it's a popular city, use the stored elevation
+    if (location.isPopular) {
+      setDestAlt(location.elevation.toString());
+    } else {
+      // Fetch elevation from API
+      setDestSearching(true);
+      const elevation = await getElevation(location.latitude, location.longitude);
+      setDestSearching(false);
+      
+      if (elevation) {
+        setDestAlt(elevation.toString());
+      }
     }
   };
 
-  const handleDestLocationSelect = (city) => {
-    setDestLocation(city);
-    const elevation = getCityElevation(city);
-    if (elevation) {
-      setDestAlt(elevation.toString());
-    }
-    setDestSuggestions([]);
-  };
+  // ... keep all your other functions (calculatePlan, getDayByDayPlan, etc.) the same
 
   const calculatePlan = async (e) => {
     e.preventDefault();
@@ -369,7 +426,7 @@ export default function Calculator() {
           }}>
             <h3 style={{ marginBottom: '1.5rem', color: '#1f2937', fontSize: 'clamp(1.2rem, 3vw, 1.5rem)' }}>Enter Your Details</h3>
             
-            {/* Home Location */}
+{/* Home Location */}
             <div style={{ marginBottom: '20px', position: 'relative' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
                 Home Location
@@ -381,6 +438,11 @@ export default function Calculator() {
                 placeholder="e.g., Denver, CO"
                 style={{ width: '100%', padding: 'clamp(10px, 2vw, 12px)', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}
               />
+              {homeSearching && (
+                <div style={{ fontSize: '0.85rem', color: '#6b7280', marginTop: '0.5rem' }}>
+                  Searching...
+                </div>
+              )}
               {homeSuggestions.length > 0 && (
                 <div style={{
                   position: 'absolute',
@@ -391,30 +453,42 @@ export default function Calculator() {
                   border: '2px solid #e5e7eb',
                   borderTop: 'none',
                   borderRadius: '0 0 8px 8px',
-                  maxHeight: '200px',
+                  maxHeight: '250px',
                   overflowY: 'auto',
                   zIndex: 10,
-                  marginTop: '-2px'
+                  marginTop: '-2px',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                 }}>
-                  {homeSuggestions.map((city, i) => (
+                  {homeSuggestions.map((location, i) => (
                     <div
                       key={i}
                       style={{
-                        padding: '10px',
+                        padding: '12px',
                         cursor: 'pointer',
-                        fontSize: 'clamp(0.85rem, 2vw, 0.9rem)'
+                        fontSize: 'clamp(0.85rem, 2vw, 0.9rem)',
+                        borderBottom: i < homeSuggestions.length - 1 ? '1px solid #f3f4f6' : 'none'
                       }}
-                      onClick={() => handleHomeLocationSelect(city)}
+                      onClick={() => handleHomeLocationSelect(location)}
                       onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
                       onMouseLeave={(e) => e.target.style.background = 'white'}
                     >
-                      {city} ({getCityElevation(city)?.toLocaleString()} ft)
+                      <div style={{ fontWeight: 500 }}>{location.displayName}</div>
+                      {location.elevation && (
+                        <div style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '2px' }}>
+                          {location.elevation.toLocaleString()} ft
+                        </div>
+                      )}
+                      {location.isPopular && (
+                        <div style={{ fontSize: '0.75rem', color: '#2563eb', marginTop: '2px' }}>
+                          ⭐ Popular
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
               )}
               <p style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', color: '#6b7280', marginTop: '0.5rem' }}>
-                💡 Start typing to see suggestions
+                💡 Start typing to search worldwide locations
               </p>
             </div>
 
