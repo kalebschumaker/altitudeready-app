@@ -2,11 +2,17 @@ import { useState, useEffect } from 'react';
 import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 import { useRouter } from 'next/router';
 import { getUserProfile } from '../lib/api';
+import { getCityElevation, searchCities } from '../lib/cityElevations';
 
 export default function Calculator() {
   const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
+  const [homeLocation, setHomeLocation] = useState('');
   const [homeAlt, setHomeAlt] = useState('');
+  const [homeSuggestions, setHomeSuggestions] = useState([]);
+  const [destLocation, setDestLocation] = useState('');
   const [destAlt, setDestAlt] = useState('');
+  const [destSuggestions, setDestSuggestions] = useState([]);
   const [activityLevel, setActivityLevel] = useState('moderate');
   const [fitnessLevel, setFitnessLevel] = useState('average');
   const [result, setResult] = useState(null);
@@ -22,7 +28,6 @@ export default function Calculator() {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
       
-      // Load user profile and auto-fill home altitude
       const session = await fetchAuthSession();
       const userId = session.tokens?.idToken?.payload?.sub;
       
@@ -30,9 +35,9 @@ export default function Calculator() {
         const profileResponse = await getUserProfile(userId);
         if (profileResponse.success && profileResponse.data) {
           setUserProfile(profileResponse.data);
-          // Auto-fill home altitude from profile
-          if (profileResponse.data.homeAltitude) {
-            setHomeAlt(profileResponse.data.homeAltitude.toString());
+          if (profileResponse.data.homeCity) {
+            setHomeLocation(profileResponse.data.homeCity);
+            setHomeAlt(profileResponse.data.homeAltitude?.toString() || '');
           }
         }
       }
@@ -41,8 +46,56 @@ export default function Calculator() {
     }
   };
 
-  const [userProfile, setUserProfile] = useState(null);
-  
+  const handleHomeLocationChange = (value) => {
+    setHomeLocation(value);
+    
+    const elevation = getCityElevation(value);
+    if (elevation) {
+      setHomeAlt(elevation.toString());
+    }
+    
+    if (value.length >= 2) {
+      const suggestions = searchCities(value);
+      setHomeSuggestions(suggestions);
+    } else {
+      setHomeSuggestions([]);
+    }
+  };
+
+  const handleHomeLocationSelect = (city) => {
+    setHomeLocation(city);
+    const elevation = getCityElevation(city);
+    if (elevation) {
+      setHomeAlt(elevation.toString());
+    }
+    setHomeSuggestions([]);
+  };
+
+  const handleDestLocationChange = (value) => {
+    setDestLocation(value);
+    
+    const elevation = getCityElevation(value);
+    if (elevation) {
+      setDestAlt(elevation.toString());
+    }
+    
+    if (value.length >= 2) {
+      const suggestions = searchCities(value);
+      setDestSuggestions(suggestions);
+    } else {
+      setDestSuggestions([]);
+    }
+  };
+
+  const handleDestLocationSelect = (city) => {
+    setDestLocation(city);
+    const elevation = getCityElevation(city);
+    if (elevation) {
+      setDestAlt(elevation.toString());
+    }
+    setDestSuggestions([]);
+  };
+
   const calculatePlan = async (e) => {
     e.preventDefault();
     
@@ -51,20 +104,20 @@ export default function Calculator() {
     const altChange = dest - home;
     const baseDays = Math.max(1, Math.floor(altChange / 1000));
     const multipliers = { light: 0.7, moderate: 1.0, intense: 1.3, extreme: 1.6 };
-    const fitnessMultipliers = { 
-    beginner: 1.3,      // Needs 30% more time
-    average: 1.0,       // Standard time
-    fit: 0.8,          // 20% faster acclimation
-    athlete: 0.7       // 30% faster acclimation
-  };
-    const recDays = Math.ceil(baseDays * multipliers[activityLevel]);
     
-    // Calculate detailed recommendations
+    const fitnessMultipliers = { 
+      beginner: 1.3,
+      average: 1.0,
+      fit: 0.8,
+      athlete: 0.7
+    };
+    
+    const recDays = Math.ceil(baseDays * multipliers[activityLevel] * fitnessMultipliers[fitnessLevel]);
+    
     const firstActivityDay = Math.max(1, Math.ceil(recDays * 0.3));
     const moderateActivityDay = Math.max(2, Math.ceil(recDays * 0.6));
     const fullIntensityDay = Math.max(2, recDays);
     
-    // Calculate risk level
     let riskLevel = 'Low';
     let riskColor = '#10b981';
     if (altChange > 8000) {
@@ -78,12 +131,10 @@ export default function Calculator() {
       riskColor = '#f59e0b';
     }
     
-    // Calculate hydration needs (increase 1.5x at altitude)
-    const baseHydration = 2; // liters
+    const baseHydration = 2;
     const altitudeMultiplier = 1 + (altChange / 10000);
     const recommendedHydration = Math.round(baseHydration * altitudeMultiplier * 10) / 10;
     
-    // Calculate calorie increase (10% per 1000ft)
     const calorieIncrease = Math.round((altChange / 1000) * 10);
     
     setResult({
@@ -97,10 +148,11 @@ export default function Calculator() {
       hydration: recommendedHydration,
       calorieIncrease,
       homeAltitude: home,
-      destAltitude: dest
+      destAltitude: dest,
+      homeLocation,
+      destLocation
     });
 
-    // Scroll to results on mobile
     setTimeout(() => {
       const resultsElement = document.getElementById('results-section');
       if (resultsElement && window.innerWidth < 768) {
@@ -182,7 +234,6 @@ export default function Calculator() {
             <span>AltitudeReady</span>
           </div>
           
-          {/* Desktop Nav */}
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }} className="desktop-nav">
             {user ? (
               <>
@@ -224,7 +275,6 @@ export default function Calculator() {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             style={{
@@ -241,7 +291,6 @@ export default function Calculator() {
           </button>
         </nav>
 
-        {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div style={{
             background: 'white',
@@ -310,7 +359,6 @@ export default function Calculator() {
           <p style={{ fontSize: 'clamp(1rem, 3vw, 1.2rem)', color: '#6b7280' }}>Get your personalized altitude acclimation plan with detailed recommendations</p>
         </div>
 
-        {/* Input Form - Always on top */}
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           <form onSubmit={calculatePlan} style={{ 
             background: 'white', 
@@ -321,6 +369,56 @@ export default function Calculator() {
           }}>
             <h3 style={{ marginBottom: '1.5rem', color: '#1f2937', fontSize: 'clamp(1.2rem, 3vw, 1.5rem)' }}>Enter Your Details</h3>
             
+            {/* Home Location */}
+            <div style={{ marginBottom: '20px', position: 'relative' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
+                Home Location
+              </label>
+              <input 
+                type="text" 
+                value={homeLocation}
+                onChange={(e) => handleHomeLocationChange(e.target.value)}
+                placeholder="e.g., Denver, CO"
+                style={{ width: '100%', padding: 'clamp(10px, 2vw, 12px)', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}
+              />
+              {homeSuggestions.length > 0 && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  background: 'white',
+                  border: '2px solid #e5e7eb',
+                  borderTop: 'none',
+                  borderRadius: '0 0 8px 8px',
+                  maxHeight: '200px',
+                  overflowY: 'auto',
+                  zIndex: 10,
+                  marginTop: '-2px'
+                }}>
+                  {homeSuggestions.map((city, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        padding: '10px',
+                        cursor: 'pointer',
+                        fontSize: 'clamp(0.85rem, 2vw, 0.9rem)'
+                      }}
+                      onClick={() => handleHomeLocationSelect(city)}
+                      onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
+                      onMouseLeave={(e) => e.target.style.background = 'white'}
+                    >
+                      {city} ({getCityElevation(city)?.toLocaleString()} ft)
+                    </div>
+                  ))}
+                </div>
+              )}
+              <p style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', color: '#6b7280', marginTop: '0.5rem' }}>
+                💡 Start typing to see suggestions
+              </p>
+            </div>
+
+            {/* Home Altitude */}
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
                 Home Altitude (feet)
@@ -330,16 +428,61 @@ export default function Calculator() {
                 value={homeAlt}
                 onChange={(e) => setHomeAlt(e.target.value)}
                 required
-                placeholder={userProfile?.homeAltitude ? `${userProfile.homeAltitude} (${userProfile.homeCity})` : "e.g., 500"}
+                placeholder="e.g., 500"
                 style={{ width: '100%', padding: 'clamp(10px, 2vw, 12px)', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}
               />
-              {userProfile?.homeCity && (
-                <p style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', color: '#6b7280', marginTop: '0.5rem' }}>
-                  ✓ Using your home city: {userProfile.homeCity} ({userProfile.homeAltitude?.toLocaleString()} ft)
-                </p>
+            </div>
+
+            {/* Destination Location */}
+            <div style={{ marginBottom: '20px', position: 'relative' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
+                Destination Location
+              </label>
+              <input 
+                type="text" 
+                value={destLocation}
+                onChange={(e) => handleDestLocationChange(e.target.value)}
+                placeholder="e.g., Aspen, CO"
+                style={{ width: '100%', padding: 'clamp(10px, 2vw, 12px)', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}
+              />
+              {destSuggestions.length > 0 && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  background: 'white',
+                  border: '2px solid #e5e7eb',
+                  borderTop: 'none',
+                  borderRadius: '0 0 8px 8px',
+                  maxHeight: '200px',
+                  overflowY: 'auto',
+                  zIndex: 10,
+                  marginTop: '-2px'
+                }}>
+                  {destSuggestions.map((city, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        padding: '10px',
+                        cursor: 'pointer',
+                        fontSize: 'clamp(0.85rem, 2vw, 0.9rem)'
+                      }}
+                      onClick={() => handleDestLocationSelect(city)}
+                      onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
+                      onMouseLeave={(e) => e.target.style.background = 'white'}
+                    >
+                      {city} ({getCityElevation(city)?.toLocaleString()} ft)
+                    </div>
+                  ))}
+                </div>
               )}
+              <p style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', color: '#6b7280', marginTop: '0.5rem' }}>
+                💡 Start typing to see suggestions
+              </p>
             </div>
             
+            {/* Destination Altitude */}
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
                 Destination Altitude (feet)
@@ -354,6 +497,7 @@ export default function Calculator() {
               />
             </div>
 
+            {/* Current Fitness Level */}
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
                 Current Fitness Level
@@ -370,6 +514,7 @@ export default function Calculator() {
               </select>
             </div>
             
+            {/* Activity Level at Destination */}
             <div style={{ marginBottom: '25px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
                 Activity Level at Destination
@@ -405,9 +550,10 @@ export default function Calculator() {
           </form>
         </div>
 
-        {/* Results - Always display BELOW the form */}
+        {/* Results section - keeping the same as before */}
         {result && (
           <div id="results-section" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            {/* All your existing results display code goes here - I'll keep it the same */}
             {/* Summary Cards */}
             <div style={{ 
               display: 'grid',
@@ -419,6 +565,11 @@ export default function Calculator() {
                 <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', opacity: 0.9 }}>Altitude Change</div>
                 <div style={{ fontSize: 'clamp(1.8rem, 4vw, 2rem)', fontWeight: 700, marginTop: '0.5rem' }}>{result.altitudeChange.toLocaleString()}</div>
                 <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', opacity: 0.9 }}>feet</div>
+                {result.homeLocation && result.destLocation && (
+                  <div style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', marginTop: '0.5rem', opacity: 0.8 }}>
+                    {result.homeLocation} → {result.destLocation}
+                  </div>
+                )}
               </div>
               
               <div style={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white', padding: 'clamp(1.2rem, 3vw, 1.5rem)', borderRadius: '12px' }}>
@@ -434,7 +585,7 @@ export default function Calculator() {
               </div>
             </div>
 
-            {/* Detailed Plan */}
+            {/* Rest of results sections unchanged - keeping all the day-by-day plan, hydration, symptoms sections exactly as they were */}
             <div style={{ background: 'white', padding: 'clamp(1.5rem, 4vw, 2rem)', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', marginBottom: '2rem' }}>
               <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 1.8rem)', marginBottom: '1.5rem', color: '#1f2937' }}>Your Acclimation Timeline</h2>
               
@@ -455,7 +606,6 @@ export default function Calculator() {
                 </div>
               </div>
 
-              {/* Day by Day Plan */}
               <h3 style={{ fontSize: 'clamp(1.2rem, 3vw, 1.3rem)', marginBottom: '1rem', color: '#1f2937' }}>Day-by-Day Activity Guide</h3>
               <div style={{ display: 'grid', gap: '1rem' }}>
                 {getDayByDayPlan().map((day) => (
@@ -512,7 +662,7 @@ export default function Calculator() {
               </div>
             </div>
 
-            {/* Hydration & Nutrition */}
+            {/* Hydration & Nutrition - keeping exactly as before */}
             <div style={{ background: 'white', padding: 'clamp(1.5rem, 4vw, 2rem)', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', marginBottom: '2rem' }}>
               <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 1.8rem)', marginBottom: '1.5rem', color: '#1f2937' }}>💧 Hydration & Nutrition</h2>
               
@@ -556,7 +706,7 @@ export default function Calculator() {
               </div>
             </div>
 
-            {/* Symptom Guide */}
+            {/* Symptom Guide - keeping exactly as before */}
             <div style={{ background: 'white', padding: 'clamp(1.5rem, 4vw, 2rem)', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', marginBottom: '2rem' }}>
               <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 1.8rem)', marginBottom: '1.5rem', color: '#1f2937' }}>🏥 Altitude Sickness Symptom Guide</h2>
               
