@@ -367,84 +367,104 @@ const handleUpdateProfile = async (e) => {
             </div>
           ) : (
             <div style={{ display: 'grid', gap: '1.5rem' }}>
-              {trips.map((trip) => (
-                <div key={trip.tripId} style={{
-                  border: '2px solid #e5e7eb',
-                  borderRadius: '12px',
-                  padding: '1.5rem',
-                  transition: 'all 0.3s',
-                  cursor: 'pointer'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#2563eb';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#e5e7eb';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
-                    <div>
-                      <h3 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#1f2937', marginBottom: '0.5rem' }}>
-                        {trip.tripName || trip.destinationName}
-                      </h3>
-                      <p style={{ color: '#6b7280', fontSize: '1.1rem' }}>
-                        📍 {trip.destinationName} • {trip.destinationAltitude?.toLocaleString()} ft
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handleDeleteTrip(trip.tripId)}
-                      style={{
-                        background: '#fee2e2',
-                        color: '#dc2626',
-                        padding: '0.5rem 1rem',
-                        borderRadius: '8px',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontWeight: 600,
-                        fontSize: '0.9rem'
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                  
-                  <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
-                    gap: '1rem',
-                    padding: '1rem',
-                    background: '#f9fafb',
-                    borderRadius: '8px'
-                  }}>
-                    <div>
-                      <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>Altitude Change</div>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 600, color: '#2563eb' }}>
-                        {trip.altitudeChange?.toLocaleString()} ft
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>Acclimation Days</div>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 600, color: '#2563eb' }}>
-                        {trip.recommendedDays} days
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>Arrival Date</div>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 600, color: '#1f2937' }}>
-                        {new Date(trip.arrivalDate).toLocaleDateString()}
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>Departure Date</div>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 600, color: '#1f2937' }}>
-                        {new Date(trip.departureDate).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+{trips.map((trip) => (
+  <div 
+    key={trip.tripId} 
+    style={{
+      border: '2px solid #e5e7eb',
+      borderRadius: '12px',
+      padding: '1.5rem',
+      transition: 'all 0.3s',
+      cursor: 'pointer',
+      position: 'relative'
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.borderColor = '#2563eb';
+      e.currentTarget.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.2)';
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.borderColor = '#e5e7eb';
+      e.currentTarget.style.boxShadow = 'none';
+    }}
+  >
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
+      <div style={{ flex: 1 }}>
+        <h3 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#1f2937', marginBottom: '0.5rem' }}>
+          {trip.tripName || trip.destinationName}
+        </h3>
+        <p style={{ color: '#6b7280', fontSize: '1.1rem' }}>
+          📍 {trip.destinationName} • {trip.destinationAltitude?.toLocaleString()} ft
+        </p>
+      </div>
+      <button
+        onClick={(e) => {
+          e.stopPropagation(); // Prevent card click
+          handleDeleteTrip(trip.tripId);
+        }}
+        style={{
+          background: '#fee2e2',
+          color: '#dc2626',
+          padding: '0.5rem 1rem',
+          borderRadius: '8px',
+          border: 'none',
+          cursor: 'pointer',
+          fontWeight: 600,
+          fontSize: '0.9rem'
+        }}
+      >
+        Delete
+      </button>
+    </div>
+    
+    <div style={{ 
+      display: 'grid', 
+      gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
+      gap: '1rem',
+      padding: '1rem',
+      background: '#f9fafb',
+      borderRadius: '8px'
+    }}>
+      <div>
+        <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>Altitude Change</div>
+        <div style={{ fontSize: '1.2rem', fontWeight: 600, color: '#2563eb' }}>
+          {trip.altitudeChange?.toLocaleString()} ft
+        </div>
+      </div>
+      <div>
+        <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>Acclimation Days</div>
+        <div style={{ fontSize: '1.2rem', fontWeight: 600, color: '#2563eb' }}>
+          {trip.recommendedDays} days
+        </div>
+      </div>
+      <div>
+        <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>Arrival Date</div>
+        <div style={{ fontSize: '1.2rem', fontWeight: 600, color: '#1f2937' }}>
+          {new Date(trip.arrivalDate).toLocaleDateString()}
+        </div>
+      </div>
+      <div>
+        <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>Departure Date</div>
+        <div style={{ fontSize: '1.2rem', fontWeight: 600, color: '#1f2937' }}>
+          {new Date(trip.departureDate).toLocaleDateString()}
+        </div>
+      </div>
+    </div>
+    
+    {/* Expandable details - Click to view more */}
+    <div style={{ 
+      marginTop: '1rem', 
+      padding: '0.75rem', 
+      background: '#eff6ff', 
+      borderRadius: '8px',
+      textAlign: 'center',
+      color: '#2563eb',
+      fontWeight: 600,
+      fontSize: '0.9rem'
+    }}>
+      Click for detailed acclimation plan →
+    </div>
+  </div>
+))}
             </div>
           )}
         </div>
