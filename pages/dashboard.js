@@ -12,6 +12,7 @@ export default function Dashboard() {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [expandedTrip, setExpandedTrip] = useState(null);
   
   // Trip form
   const [tripName, setTripName] = useState('');
@@ -60,26 +61,64 @@ export default function Dashboard() {
       }
     } catch (err) {
       console.error('Auth error:', err);
-      router.push('/signin');
+      router.push('/auth/signin');
     }
     setLoading(false);
   };
 
-const [expandedTrip, setExpandedTrip] = useState(null);
-
-const handleTripClick = (trip) => {
-  // Redirect to calculator with pre-filled data
-  router.push({
-    pathname: '/calculator',
-    query: {
-      homeAlt: trip.homeAltitude,
-      destAlt: trip.destinationAltitude,
-      destName: trip.destinationName
+  // Helper functions for expanded trip view
+  const getDayByDayPlan = (trip) => {
+    if (!trip) return [];
+    
+    const plan = [];
+    const firstActivityDay = Math.max(1, Math.ceil(trip.recommendedDays * 0.3));
+    const moderateActivityDay = Math.max(2, Math.ceil(trip.recommendedDays * 0.6));
+    
+    for (let day = 1; day <= trip.recommendedDays; day++) {
+      let activity, intensity, tips;
+      
+      if (day < firstActivityDay) {
+        activity = "Rest & Acclimate";
+        intensity = 0;
+        tips = ["Light walking only", "Stay hydrated", "Monitor symptoms", "Avoid alcohol"];
+      } else if (day < moderateActivityDay) {
+        activity = "Light Activity";
+        intensity = 30;
+        tips = ["Easy hiking or walking", "Keep heart rate low", "Rest if symptoms appear", "Continue high fluid intake"];
+      } else if (day < trip.recommendedDays) {
+        activity = "Moderate Activity";
+        intensity = 60;
+        tips = ["Moderate hiking/skiing", "70-80% of normal intensity", "Take breaks as needed", "Watch for altitude sickness"];
+      } else {
+        activity = "Full Intensity";
+        intensity = 100;
+        tips = ["All activities OK", "Listen to your body", "Maintain hydration", "Recovery is key"];
+      }
+      
+      plan.push({ day, activity, intensity, tips });
     }
-  });
-};
-  
-  
+    
+    return plan;
+  };
+
+  const getSymptomGuide = () => {
+    return {
+      normal: ["Shortness of breath during activity", "Mild fatigue", "Slight headache (day 1-2)", "Increased urination", "Sleep disturbances"],
+      warning: ["Persistent headache", "Nausea or vomiting", "Dizziness", "Extreme fatigue", "Loss of appetite"],
+      emergency: ["Severe headache not relieved by medication", "Confusion or difficulty thinking", "Shortness of breath at rest", "Coughing up pink/frothy fluid", "Unable to walk straight"]
+    };
+  };
+
+  const calculateHydration = (altChange) => {
+    const baseHydration = 2;
+    const altitudeMultiplier = 1 + (altChange / 10000);
+    return Math.round(baseHydration * altitudeMultiplier * 10) / 10;
+  };
+
+  const calculateCalories = (altChange) => {
+    return Math.round((altChange / 1000) * 10);
+  };
+
   const handleAddTrip = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -129,36 +168,32 @@ const handleTripClick = (trip) => {
     }
   };
 
-const handleUpdateProfile = async (e) => {
-  e.preventDefault();
-  setSaving(true);
-  try {
-    // Update the profile in DynamoDB
-    await updateUserProfile(userId, {
-      name: editName,
-      homeCity: editHomeCity,
-      homeAltitude: parseInt(editHomeAltitude)
-    });
-    
-    // Update local state
-    setUserProfile({
-      ...userProfile,
-      name: editName,
-      homeCity: editHomeCity,
-      homeAltitude: parseInt(editHomeAltitude)
-    });
-    
-    // Update home altitude in the state
-    setHomeAlt(editHomeAltitude);
-    
-    setShowEditProfile(false);
-    alert('Profile updated successfully!');
-  } catch (error) {
-    console.error('Error updating profile:', error);
-    alert('Error updating profile. Please try again.');
-  }
-  setSaving(false);
-};
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await updateUserProfile(userId, {
+        name: editName,
+        homeCity: editHomeCity,
+        homeAltitude: parseInt(editHomeAltitude)
+      });
+      
+      setUserProfile({
+        ...userProfile,
+        name: editName,
+        homeCity: editHomeCity,
+        homeAltitude: parseInt(editHomeAltitude)
+      });
+      
+      setHomeAltitude(editHomeAltitude);
+      setShowEditProfile(false);
+      alert('Profile updated successfully!');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Error updating profile. Please try again.');
+    }
+    setSaving(false);
+  };
 
   const handleSignOut = async () => {
     try {
@@ -179,11 +214,33 @@ const handleUpdateProfile = async (e) => {
 
   return (
     <div style={{ fontFamily: 'system-ui, -apple-system, sans-serif', minHeight: '100vh', background: '#f9fafb' }}>
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .stats-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .action-buttons {
+            flex-direction: column !important;
+          }
+          .action-buttons button {
+            width: 100% !important;
+          }
+          .header-buttons {
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+          }
+          .header-buttons button {
+            padding: 0.5rem 1rem !important;
+            fontSize: 0.9rem !important;
+          }
+        }
+      `}</style>
+
       {/* Header */}
       <header style={{
         background: 'white',
         boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        padding: '1.5rem 2rem',
+        padding: 'clamp(1rem, 2vw, 1.5rem) clamp(1rem, 3vw, 2rem)',
         marginBottom: '2rem'
       }}>
         <div style={{
@@ -191,12 +248,14 @@ const handleUpdateProfile = async (e) => {
           margin: '0 auto',
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center'
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1rem'
         }}>
           <div 
             onClick={() => router.push('/')}
             style={{
-              fontSize: '1.5rem',
+              fontSize: 'clamp(1.2rem, 3vw, 1.5rem)',
               fontWeight: 700,
               color: '#2563eb',
               display: 'flex',
@@ -205,11 +264,19 @@ const handleUpdateProfile = async (e) => {
               cursor: 'pointer'
             }}
           >
-            <span style={{ fontSize: '2rem' }}>⛰️</span>
+            <img 
+              src="/logo_notext.png" 
+              alt="AltitudeReady Logo" 
+              style={{ 
+                width: '45px', 
+                height: '45px',
+                objectFit: 'contain'
+              }} 
+            />
             <span>AltitudeReady</span>
           </div>
           
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <div className="header-buttons" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
             <button
               onClick={() => router.push('/calculator')}
               style={{
@@ -245,33 +312,33 @@ const handleUpdateProfile = async (e) => {
       </header>
 
       {/* Main Content */}
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 2rem 4rem' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 clamp(1rem, 3vw, 2rem) 4rem' }}>
         {/* Welcome Section */}
         <div style={{ 
           background: 'white', 
-          padding: '2.5rem', 
+          padding: 'clamp(1.5rem, 4vw, 2.5rem)', 
           borderRadius: '16px', 
           boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
           marginBottom: '2rem'
         }}>
-          <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: '#1f2937' }}>Welcome Back! 👋</h1>
+          <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.5rem)', marginBottom: '1rem', color: '#1f2937' }}>Welcome back! 👋</h1>
           {userProfile?.name && (
-            <p style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.5rem', color: '#2563eb' }}>
+            <p style={{ fontSize: 'clamp(1.2rem, 4vw, 1.5rem)', fontWeight: 600, marginBottom: '0.5rem', color: '#2563eb' }}>
               {userProfile.name}
             </p>
           )}
           {userProfile?.homeCity && (
-            <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: '#6b7280' }}>
+            <p style={{ fontSize: 'clamp(0.95rem, 3vw, 1.1rem)', marginBottom: '0.5rem', color: '#6b7280' }}>
               📍 {userProfile.homeCity}
             </p>
           )}
-          <p style={{ fontSize: '1rem', color: '#9ca3af' }}>
+          <p style={{ fontSize: 'clamp(0.9rem, 2.5vw, 1rem)', color: '#9ca3af' }}>
             {user.signInDetails?.loginId || 'User'}
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+        <div className="action-buttons" style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
           <button
             onClick={() => {
               setEditName(userProfile?.name || '');
@@ -287,7 +354,7 @@ const handleUpdateProfile = async (e) => {
               border: '2px solid #2563eb',
               fontWeight: 600,
               cursor: 'pointer',
-              fontSize: '1.1rem',
+              fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)',
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem'
@@ -306,7 +373,7 @@ const handleUpdateProfile = async (e) => {
               border: 'none',
               fontWeight: 600,
               cursor: 'pointer',
-              fontSize: '1.1rem',
+              fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)',
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem'
@@ -317,32 +384,32 @@ const handleUpdateProfile = async (e) => {
         </div>
 
         {/* Stats Cards */}
-        <div style={{ 
+        <div className="stats-grid" style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
           gap: '1.5rem',
           marginBottom: '3rem'
         }}>
           <div style={{ 
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
             color: 'white', 
-            padding: '2rem', 
+            padding: 'clamp(1.5rem, 3vw, 2rem)', 
             borderRadius: '16px',
             boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)'
           }}>
             <div style={{ fontSize: '0.9rem', opacity: 0.9, marginBottom: '0.5rem' }}>Total Trips</div>
-            <div style={{ fontSize: '3rem', fontWeight: 700 }}>{trips.length}</div>
+            <div style={{ fontSize: 'clamp(2.5rem, 6vw, 3rem)', fontWeight: 700 }}>{trips.length}</div>
           </div>
           
           <div style={{ 
             background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', 
             color: 'white', 
-            padding: '2rem', 
+            padding: 'clamp(1.5rem, 3vw, 2rem)', 
             borderRadius: '16px',
             boxShadow: '0 4px 12px rgba(240, 147, 251, 0.4)'
           }}>
             <div style={{ fontSize: '0.9rem', opacity: 0.9, marginBottom: '0.5rem' }}>Upcoming Trips</div>
-            <div style={{ fontSize: '3rem', fontWeight: 700 }}>
+            <div style={{ fontSize: 'clamp(2.5rem, 6vw, 3rem)', fontWeight: 700 }}>
               {trips.filter(t => new Date(t.arrivalDate) > new Date()).length}
             </div>
           </div>
@@ -350,12 +417,12 @@ const handleUpdateProfile = async (e) => {
           <div style={{ 
             background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', 
             color: 'white', 
-            padding: '2rem', 
+            padding: 'clamp(1.5rem, 3vw, 2rem)', 
             borderRadius: '16px',
             boxShadow: '0 4px 12px rgba(79, 172, 254, 0.4)'
           }}>
             <div style={{ fontSize: '0.9rem', opacity: 0.9, marginBottom: '0.5rem' }}>Past Trips</div>
-            <div style={{ fontSize: '3rem', fontWeight: 700 }}>
+            <div style={{ fontSize: 'clamp(2.5rem, 6vw, 3rem)', fontWeight: 700 }}>
               {trips.filter(t => new Date(t.departureDate) < new Date()).length}
             </div>
           </div>
@@ -364,11 +431,11 @@ const handleUpdateProfile = async (e) => {
         {/* Trips Section */}
         <div style={{ 
           background: 'white', 
-          padding: '2.5rem', 
+          padding: 'clamp(1.5rem, 4vw, 2.5rem)', 
           borderRadius: '16px', 
           boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
         }}>
-          <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', color: '#1f2937' }}>Your Trips</h2>
+          <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 1.8rem)', marginBottom: '1.5rem', color: '#1f2937' }}>Your Trips</h2>
           
           {trips.length === 0 ? (
             <div style={{ 
@@ -382,111 +449,270 @@ const handleUpdateProfile = async (e) => {
             </div>
           ) : (
             <div style={{ display: 'grid', gap: '1.5rem' }}>
-{trips.map((trip) => (
-  <div 
-    key={trip.tripId} 
-    onClick={() => handleTripClick(trip)}       
-    style={{
-      border: '2px solid #e5e7eb',
-      borderRadius: '12px',
-      padding: '1.5rem',
-      transition: 'all 0.3s',
-      cursor: 'pointer',
-      position: 'relative'
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.borderColor = '#2563eb';
-      e.currentTarget.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.2)';
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.borderColor = '#e5e7eb';
-      e.currentTarget.style.boxShadow = 'none';
-    }}
-  >
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
-      <div style={{ flex: 1 }}>
-        <h3 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#1f2937', marginBottom: '0.5rem' }}>
-          {trip.tripName || trip.destinationName}
-        </h3>
-        <p style={{ color: '#6b7280', fontSize: '1.1rem' }}>
-          📍 {trip.destinationName} • {trip.destinationAltitude?.toLocaleString()} ft
-        </p>
-      </div>
-      <button
-        onClick={(e) => {
-          e.stopPropagation(); // Prevent card click
-          handleDeleteTrip(trip.tripId);
-        }}
-        style={{
-          background: '#fee2e2',
-          color: '#dc2626',
-          padding: '0.5rem 1rem',
-          borderRadius: '8px',
-          border: 'none',
-          cursor: 'pointer',
-          fontWeight: 600,
-          fontSize: '0.9rem'
-        }}
-      >
-        Delete
-      </button>
-    </div>
-    
-    <div style={{ 
-      display: 'grid', 
-      gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
-      gap: '1rem',
-      padding: '1rem',
-      background: '#f9fafb',
-      borderRadius: '8px'
-    }}>
-      <div>
-        <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>Altitude Change</div>
-        <div style={{ fontSize: '1.2rem', fontWeight: 600, color: '#2563eb' }}>
-          {trip.altitudeChange?.toLocaleString()} ft
-        </div>
-      </div>
-      <div>
-        <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>Acclimation Days</div>
-        <div style={{ fontSize: '1.2rem', fontWeight: 600, color: '#2563eb' }}>
-          {trip.recommendedDays} days
-        </div>
-      </div>
-      <div>
-        <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>Arrival Date</div>
-        <div style={{ fontSize: '1.2rem', fontWeight: 600, color: '#1f2937' }}>
-          {new Date(trip.arrivalDate).toLocaleDateString()}
-        </div>
-      </div>
-      <div>
-        <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>Departure Date</div>
-        <div style={{ fontSize: '1.2rem', fontWeight: 600, color: '#1f2937' }}>
-          {new Date(trip.departureDate).toLocaleDateString()}
-        </div>
-      </div>
-    </div>
-    
-    {/* Expandable details - Click to view more */}
-    <div style={{ 
-      marginTop: '1rem', 
-      padding: '0.75rem', 
-      background: '#eff6ff', 
-      borderRadius: '8px',
-      textAlign: 'center',
-      color: '#2563eb',
-      fontWeight: 600,
-      fontSize: '0.9rem'
-    }}>
-      Click for detailed acclimation plan →
-    </div>
-  </div>
-))}
+              {trips.map((trip) => (
+                <div key={trip.tripId}>
+                  {/* Trip Card Header */}
+                  <div style={{
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '12px',
+                    padding: 'clamp(1rem, 3vw, 1.5rem)',
+                    transition: 'all 0.3s',
+                    background: expandedTrip === trip.tripId ? '#f9fafb' : 'white'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (expandedTrip !== trip.tripId) {
+                      e.currentTarget.style.borderColor = '#2563eb';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.2)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (expandedTrip !== trip.tripId) {
+                      e.currentTarget.style.borderColor = '#e5e7eb';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }
+                  }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                      <div style={{ flex: 1, minWidth: '200px' }}>
+                        <h3 style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 600, color: '#1f2937', marginBottom: '0.5rem' }}>
+                          {trip.tripName || trip.destinationName}
+                        </h3>
+                        <p style={{ color: '#6b7280', fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}>
+                          📍 {trip.destinationName} • {trip.destinationAltitude?.toLocaleString()} ft
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteTrip(trip.tripId);
+                        }}
+                        style={{
+                          background: '#fee2e2',
+                          color: '#dc2626',
+                          padding: '0.5rem 1rem',
+                          borderRadius: '8px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontWeight: 600,
+                          fontSize: '0.9rem'
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                    
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+                      gap: '1rem',
+                      padding: '1rem',
+                      background: 'white',
+                      borderRadius: '8px',
+                      marginBottom: '1rem'
+                    }}>
+                      <div>
+                        <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>Altitude Change</div>
+                        <div style={{ fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', fontWeight: 600, color: '#2563eb' }}>
+                          {trip.altitudeChange?.toLocaleString()} ft
+                        </div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>Acclimation Days</div>
+                        <div style={{ fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', fontWeight: 600, color: '#2563eb' }}>
+                          {trip.recommendedDays} days
+                        </div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>Arrival Date</div>
+                        <div style={{ fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', fontWeight: 600, color: '#1f2937' }}>
+                          {new Date(trip.arrivalDate).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>Departure Date</div>
+                        <div style={{ fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', fontWeight: 600, color: '#1f2937' }}>
+                          {new Date(trip.departureDate).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Expand/Collapse Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedTrip(expandedTrip === trip.tripId ? null : trip.tripId);
+                      }}
+                      style={{ 
+                        width: '100%',
+                        marginTop: '1rem', 
+                        padding: '0.75rem', 
+                        background: expandedTrip === trip.tripId ? '#2563eb' : '#eff6ff', 
+                        borderRadius: '8px',
+                        border: 'none',
+                        textAlign: 'center',
+                        color: expandedTrip === trip.tripId ? 'white' : '#2563eb',
+                        fontWeight: 600,
+                        fontSize: 'clamp(0.85rem, 2vw, 0.9rem)',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s'
+                      }}
+                    >
+                      {expandedTrip === trip.tripId ? '▲ Hide Acclimation Plan' : '▼ View Detailed Acclimation Plan'}
+                    </button>
+                  </div>
+
+                  {/* Expanded Trip Details */}
+                  {expandedTrip === trip.tripId && (
+                    <div style={{ 
+                      marginTop: '1rem',
+                      padding: 'clamp(1rem, 3vw, 2rem)',
+                      background: 'white',
+                      borderRadius: '12px',
+                      border: '2px solid #2563eb',
+                      boxShadow: '0 4px 12px rgba(37, 99, 235, 0.15)'
+                    }}>
+                      {/* Day-by-Day Plan */}
+                      <h3 style={{ fontSize: 'clamp(1.3rem, 3vw, 1.5rem)', marginBottom: '1.5rem', color: '#1f2937' }}>
+                        Your Acclimation Timeline
+                      </h3>
+                      
+                      <div style={{ display: 'grid', gap: '1rem', marginBottom: '2rem' }}>
+                        {getDayByDayPlan(trip).map((day) => (
+                          <div key={day.day} style={{
+                            padding: 'clamp(0.8rem, 2vw, 1rem)',
+                            background: '#f9fafb',
+                            borderRadius: '8px',
+                            border: '2px solid #e5e7eb',
+                            display: 'flex',
+                            gap: '1rem',
+                            alignItems: 'start',
+                            flexWrap: 'wrap'
+                          }}>
+                            <div style={{
+                              width: 'clamp(40px, 10vw, 50px)',
+                              height: 'clamp(40px, 10vw, 50px)',
+                              minWidth: '40px',
+                              background: day.intensity === 0 ? '#fee2e2' : day.intensity < 50 ? '#fef3c7' : day.intensity < 100 ? '#dbeafe' : '#d1fae5',
+                              color: day.intensity === 0 ? '#dc2626' : day.intensity < 50 ? '#f59e0b' : day.intensity < 100 ? '#3b82f6' : '#10b981',
+                              borderRadius: '8px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: 700,
+                              fontSize: 'clamp(1rem, 3vw, 1.2rem)'
+                            }}>
+                              {day.day}
+                            </div>
+                            <div style={{ flex: 1, minWidth: '200px' }}>
+                              <div style={{ fontWeight: 600, fontSize: 'clamp(1rem, 2.5vw, 1.1rem)', marginBottom: '0.5rem', color: '#1f2937' }}>
+                                {day.activity}
+                              </div>
+                              <div style={{ 
+                                marginBottom: '0.75rem',
+                                background: '#e5e7eb',
+                                height: '8px',
+                                borderRadius: '4px',
+                                overflow: 'hidden'
+                              }}>
+                                <div style={{
+                                  width: `${day.intensity}%`,
+                                  height: '100%',
+                                  background: day.intensity === 0 ? '#dc2626' : day.intensity < 50 ? '#f59e0b' : day.intensity < 100 ? '#3b82f6' : '#10b981',
+                                  transition: 'width 0.3s'
+                                }}></div>
+                              </div>
+                              <ul style={{ margin: 0, paddingLeft: '1.5rem', fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', color: '#6b7280' }}>
+                                {day.tips.map((tip, i) => (
+                                  <li key={i}>{tip}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Hydration & Nutrition */}
+                      <h3 style={{ fontSize: 'clamp(1.3rem, 3vw, 1.5rem)', marginBottom: '1rem', color: '#1f2937' }}>
+                        💧 Hydration & Nutrition
+                      </h3>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+                        <div style={{ padding: '1.5rem', background: '#eff6ff', borderRadius: '8px', border: '2px solid #3b82f6' }}>
+                          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>💧</div>
+                          <div style={{ fontWeight: 600, fontSize: '1rem', color: '#1e40af', marginBottom: '0.5rem' }}>
+                            Daily Water Intake
+                          </div>
+                          <div style={{ fontSize: '2rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '0.5rem' }}>
+                            {calculateHydration(trip.altitudeChange)}L
+                          </div>
+                          <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+                            per day at {trip.destinationAltitude?.toLocaleString()} ft
+                          </div>
+                        </div>
+                        
+                        <div style={{ padding: '1.5rem', background: '#fef3c7', borderRadius: '8px', border: '2px solid #f59e0b' }}>
+                          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🍽️</div>
+                          <div style={{ fontWeight: 600, fontSize: '1rem', color: '#92400e', marginBottom: '0.5rem' }}>
+                            Calorie Increase
+                          </div>
+                          <div style={{ fontSize: '2rem', fontWeight: 700, color: '#78350f', marginBottom: '0.5rem' }}>
+                            +{calculateCalories(trip.altitudeChange)}%
+                          </div>
+                          <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+                            higher caloric needs
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Symptom Guide */}
+                      <h3 style={{ fontSize: 'clamp(1.3rem, 3vw, 1.5rem)', marginBottom: '1rem', color: '#1f2937' }}>
+                        🏥 Altitude Sickness Symptoms
+                      </h3>
+                      {(() => {
+                        const symptoms = getSymptomGuide();
+                        return (
+                          <div style={{ display: 'grid', gap: '1rem' }}>
+                            <div style={{ padding: '1rem', background: '#d1fae5', borderRadius: '8px', border: '2px solid #10b981' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                <span style={{ fontSize: '1.2rem' }}>✅</span>
+                                <h4 style={{ fontSize: '1rem', color: '#065f46', margin: 0 }}>Normal Symptoms</h4>
+                              </div>
+                              <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#166534', lineHeight: 1.6, fontSize: '0.85rem' }}>
+                                {symptoms.normal.map((s, i) => <li key={i}>{s}</li>)}
+                              </ul>
+                            </div>
+                            
+                            <div style={{ padding: '1rem', background: '#fef3c7', borderRadius: '8px', border: '2px solid #f59e0b' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+                                <h4 style={{ fontSize: '1rem', color: '#92400e', margin: 0 }}>Warning Signs</h4>
+                              </div>
+                              <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#78350f', lineHeight: 1.6, fontSize: '0.85rem' }}>
+                                {symptoms.warning.map((s, i) => <li key={i}>{s}</li>)}
+                              </ul>
+                            </div>
+                            
+                            <div style={{ padding: '1rem', background: '#fee2e2', borderRadius: '8px', border: '2px solid #dc2626' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                <span style={{ fontSize: '1.2rem' }}>🚨</span>
+                                <h4 style={{ fontSize: '1rem', color: '#991b1b', margin: 0 }}>Emergency - Seek Medical Help</h4>
+                              </div>
+                              <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#7f1d1d', lineHeight: 1.6, fontWeight: 600, fontSize: '0.85rem' }}>
+                                {symptoms.emergency.map((s, i) => <li key={i}>{s}</li>)}
+                              </ul>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </div>
       </div>
 
-      {/* Add Trip Modal */}
+      {/* Add Trip Modal - Keep existing */}
       {showAddTrip && (
         <div style={{
           position: 'fixed',
@@ -526,7 +752,8 @@ const handleUpdateProfile = async (e) => {
                     padding: '0.75rem',
                     border: '2px solid #e5e7eb',
                     borderRadius: '8px',
-                    fontSize: '1rem'
+                    fontSize: '1rem',
+                    boxSizing: 'border-box'
                   }}
                 />
               </div>
@@ -546,7 +773,8 @@ const handleUpdateProfile = async (e) => {
                     padding: '0.75rem',
                     border: '2px solid #e5e7eb',
                     borderRadius: '8px',
-                    fontSize: '1rem'
+                    fontSize: '1rem',
+                    boxSizing: 'border-box'
                   }}
                 />
               </div>
@@ -567,7 +795,8 @@ const handleUpdateProfile = async (e) => {
                       padding: '0.75rem',
                       border: '2px solid #e5e7eb',
                       borderRadius: '8px',
-                      fontSize: '1rem'
+                      fontSize: '1rem',
+                      boxSizing: 'border-box'
                     }}
                   />
                 </div>
@@ -587,7 +816,8 @@ const handleUpdateProfile = async (e) => {
                       padding: '0.75rem',
                       border: '2px solid #e5e7eb',
                       borderRadius: '8px',
-                      fontSize: '1rem'
+                      fontSize: '1rem',
+                      boxSizing: 'border-box'
                     }}
                   />
                 </div>
@@ -608,7 +838,8 @@ const handleUpdateProfile = async (e) => {
                       padding: '0.75rem',
                       border: '2px solid #e5e7eb',
                       borderRadius: '8px',
-                      fontSize: '1rem'
+                      fontSize: '1rem',
+                      boxSizing: 'border-box'
                     }}
                   />
                 </div>
@@ -627,7 +858,8 @@ const handleUpdateProfile = async (e) => {
                       padding: '0.75rem',
                       border: '2px solid #e5e7eb',
                       borderRadius: '8px',
-                      fontSize: '1rem'
+                      fontSize: '1rem',
+                      boxSizing: 'border-box'
                     }}
                   />
                 </div>
@@ -645,7 +877,8 @@ const handleUpdateProfile = async (e) => {
                     padding: '0.75rem',
                     border: '2px solid #e5e7eb',
                     borderRadius: '8px',
-                    fontSize: '1rem'
+                    fontSize: '1rem',
+                    boxSizing: 'border-box'
                   }}
                 >
                   <option value="light">Light</option>
@@ -697,7 +930,7 @@ const handleUpdateProfile = async (e) => {
         </div>
       )}
 
-      {/* Edit Profile Modal */}
+      {/* Edit Profile Modal - Keep existing */}
       {showEditProfile && (
         <div style={{
           position: 'fixed',
@@ -717,7 +950,9 @@ const handleUpdateProfile = async (e) => {
             borderRadius: '16px',
             padding: '2.5rem',
             maxWidth: '500px',
-            width: '100%'
+            width: '100%',
+            maxHeight: '90vh',
+            overflowY: 'auto'
           }}>
             <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', color: '#1f2937' }}>Edit Profile</h2>
             <form onSubmit={handleUpdateProfile}>
@@ -735,7 +970,8 @@ const handleUpdateProfile = async (e) => {
                     padding: '0.75rem',
                     border: '2px solid #e5e7eb',
                     borderRadius: '8px',
-                    fontSize: '1rem'
+                    fontSize: '1rem',
+                    boxSizing: 'border-box'
                   }}
                 />
               </div>
@@ -754,7 +990,8 @@ const handleUpdateProfile = async (e) => {
                     padding: '0.75rem',
                     border: '2px solid #e5e7eb',
                     borderRadius: '8px',
-                    fontSize: '1rem'
+                    fontSize: '1rem',
+                    boxSizing: 'border-box'
                   }}
                 />
               </div>
@@ -773,7 +1010,8 @@ const handleUpdateProfile = async (e) => {
                     padding: '0.75rem',
                     border: '2px solid #e5e7eb',
                     borderRadius: '8px',
-                    fontSize: '1rem'
+                    fontSize: '1rem',
+                    boxSizing: 'border-box'
                   }}
                 />
               </div>
