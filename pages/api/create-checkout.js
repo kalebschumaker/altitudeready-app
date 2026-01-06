@@ -1,3 +1,8 @@
+console.log('=== API ROUTE STARTED ===');
+console.log('All env vars:', Object.keys(process.env));
+console.log('STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY);
+console.log('STRIPE_SECRET_KEY value:', process.env.STRIPE_SECRET_KEY ? 'EXISTS (length: ' + process.env.STRIPE_SECRET_KEY.length + ')' : 'MISSING');
+
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
