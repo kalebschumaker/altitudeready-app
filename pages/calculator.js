@@ -3,6 +3,7 @@ import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 import { useRouter } from 'next/router';
 import { getUserProfile } from '../lib/api';
 import { searchLocations, getElevation } from '../lib/cityElevations';
+import GoogleAd from '../components/GoogleAd';
 
 export default function Calculator() {
   const [user, setUser] = useState(null);
@@ -613,6 +614,18 @@ export default function Calculator() {
               Calculate My Plan
             </button>
           </form>
+
+                          {/* Ad - Only show to non-Pro users when no results */}
+          {!user && !result && (
+            <div style={{ marginTop: '2rem' }}>
+              <GoogleAd 
+                slot="1234567890" 
+                format="auto"
+                style={{ minHeight: '250px' }}
+              />
+            </div>
+          )}
+        </div>
         </div>
 
         {/* Results section - keeping the same as before */}
@@ -774,6 +787,21 @@ export default function Calculator() {
             {/* Symptom Guide - keeping exactly as before */}
             <div style={{ background: 'white', padding: 'clamp(1.5rem, 4vw, 2rem)', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', marginBottom: '2rem' }}>
               <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 1.8rem)', marginBottom: '1.5rem', color: '#1f2937' }}>🏥 Altitude Sickness Symptom Guide</h2>
+
+
+
+            {/* Ad - Before affiliate section */}
+            {!user && (
+              <div style={{ marginBottom: '2rem' }}>
+                <GoogleAd 
+                  slot="1122334455" 
+                  format="auto"
+                  style={{ minHeight: '250px' }}
+                />
+              </div>
+            )}
+
+            {/* Affiliate Recommendations Section - NEW */}
               
               {(() => {
                 const symptoms = getSymptomGuide();
