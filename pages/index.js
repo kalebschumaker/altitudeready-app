@@ -188,7 +188,7 @@ export default function Landing() {
             Acclimate Smarter. Perform Better.
           </h1>
           <p style={{ fontSize: 'clamp(1rem, 3vw, 1.25rem)', marginBottom: '2rem', opacity: 0.95 }}>
-            Personalized altitude acclimation plans for mountain athletes, travelers, and adventurers. Science-backed guidance to help you thrive at elevation.
+            Personalized altitude acclimation plans for mountain athletes, travelers, and adventurers. Guidance to help you thrive at elevation.
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <button
@@ -324,14 +324,14 @@ export default function Landing() {
               name: 'Free',
               price: '$0',
               period: 'Forever',
-              features: ['Basic acclimation calculator', 'Symptom tracker', 'General altitude tips']
+              features: ['Basic acclimation calculator', 'General altitude tips', '1 Trip', 'Activity intensity guidance']
             },
             {
               name: 'Pro',
               price: '$0.99',
               period: 'per month',
               featured: true,
-              features: ['Personalized acclimation plans', 'Real-time symptom monitoring', 'Activity intensity guidance', 'Hydration & nutrition calculator', 'SpO2 & heart rate integration', 'Multi-location trip planning', 'Remove ads']
+              features: ['Basic acclimation calculator', 'General altitude tips', 'Unlimited Trips', 'Remove Ads', 'Activity intensity guidance']
             }
           ].map((plan, i) => (
             <div key={i} style={{
