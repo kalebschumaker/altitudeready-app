@@ -39,29 +39,29 @@ export default function Landing() {
           justifyContent: 'space-between',
           alignItems: 'center'
         }}>
-<div 
-  onClick={() => router.push('/')}
-  style={{
-    fontSize: '1.5rem',
-    fontWeight: 700,
-    color: '#2563eb',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    cursor: 'pointer'
-  }}
->
-<img 
-  src="/logo_notext.png" 
-  alt="AltitudeReady Logo" 
-  style={{ 
-    width: 'clamp(50px, 8vw, 70px)', 
-    height: 'clamp(50px, 8vw, 70px)',
-    objectFit: 'contain'
-  }} 
-/>
-  <span>AltitudeReady</span>
-</div>
+          <div 
+            onClick={() => router.push('/')}
+            style={{
+              fontSize: '1.5rem',
+              fontWeight: 700,
+              color: '#2563eb',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              cursor: 'pointer'
+            }}
+          >
+            <img 
+              src="/logo_notext.png" 
+              alt="AltitudeReady Logo" 
+              style={{ 
+                width: 'clamp(50px, 8vw, 70px)', 
+                height: 'clamp(50px, 8vw, 70px)',
+                objectFit: 'contain'
+              }} 
+            />
+            <span>AltitudeReady</span>
+          </div>
           
           {/* Desktop Navigation */}
           <div style={{ 
@@ -183,6 +183,12 @@ export default function Landing() {
             display: block !important;
           }
         }
+        
+        @media (max-width: 968px) {
+          .pricing-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
       `}</style>
 
       {/* Hero Section */}
@@ -216,24 +222,23 @@ export default function Landing() {
             >
               Try Calculator
             </button>
-<button
-  onClick={() => {
-    router.push('/signin');
-    // This will be handled by the Auth component defaulting to signup mode
-  }}
-  style={{
-    background: 'transparent',
-    color: 'white',
-    padding: '1rem 2rem',
-    borderRadius: '8px',
-    border: '2px solid white',
-    fontSize: 'clamp(1rem, 2vw, 1.1rem)',
-    fontWeight: 600,
-    cursor: 'pointer'
-  }}
->
-  Sign Up Free
-</button>
+            <button
+              onClick={() => {
+                router.push('/signin');
+              }}
+              style={{
+                background: 'transparent',
+                color: 'white',
+                padding: '1rem 2rem',
+                borderRadius: '8px',
+                border: '2px solid white',
+                fontSize: 'clamp(1rem, 2vw, 1.1rem)',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Sign Up Free
+            </button>
           </div>
         </div>
       </section>
@@ -315,20 +320,23 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing - 2 TIERS ONLY */}
+      {/* Pricing - 3 TIERS HORIZONTAL */}
       <section id="pricing" style={{ padding: '5rem 2rem', background: 'white' }}>
         <div style={{ maxWidth: '700px', margin: '0 auto 4rem', textAlign: 'center' }}>
           <h2 style={{ fontSize: 'clamp(2rem, 5vw, 2.5rem)', marginBottom: '1rem' }}>Simple, Transparent Pricing</h2>
           <p style={{ fontSize: 'clamp(1rem, 2vw, 1.125rem)', color: '#6b7280' }}>Choose the plan that fits your mountain lifestyle</p>
         </div>
         
-        <div style={{
-          maxWidth: '900px',
-          margin: '0 auto',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '2rem'
-        }}>
+        <div 
+          className="pricing-grid"
+          style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '2rem'
+          }}
+        >
           {[
             {
               name: 'Free',
@@ -342,7 +350,7 @@ export default function Landing() {
               period: 'per month',
               features: ['Basic acclimation calculator', 'General altitude tips', 'Unlimited Trips','Activity intensity guidance', 'Remove Ads']
             },
-                        {
+            {
               name: 'Lifetime',
               price: '$10.00',
               period: 'Once',
@@ -459,14 +467,14 @@ export default function Landing() {
           </div>
           <div>
             <h4 style={{ marginBottom: '1rem' }}>Company</h4>
-            <div style={{ marginBottom: '0.5rem' }}><a href="www.cloudcity-technology.com" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>About Us</a></div>
-            <div><a href="www.cloudcity-technology.com" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Contact</a></div>
+            <div style={{ marginBottom: '0.5rem' }}><a href="https://www.cloudcity-technology.com" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>About Us</a></div>
+            <div><a href="https://www.cloudcity-technology.com" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Contact</a></div>
           </div>
           <div>
             <h4 style={{ marginBottom: '1rem' }}>Legal</h4>
-            <div style={{ marginBottom: '0.5rem' }}><a href="https://www.altitudeready.com/legal" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Privacy Policy</a></div>
-            <div style={{ marginBottom: '0.5rem' }}><a href="https://www.altitudeready.com/legal" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Terms of Service</a></div>
-            <div><a href="https://www.altitudeready.com/legal" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Medical Disclaimer</a></div>
+            <div style={{ marginBottom: '0.5rem' }}><a href="/legal" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Privacy Policy</a></div>
+            <div style={{ marginBottom: '0.5rem' }}><a href="/legal" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Terms of Service</a></div>
+            <div><a href="/legal" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Medical Disclaimer</a></div>
           </div>
         </div>
         <div style={{
