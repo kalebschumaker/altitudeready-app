@@ -114,28 +114,36 @@ export default function Dashboard() {
     }
   };
 
-  const handleUpdateProfile = async (e) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      await updateUserProfile(userId, {
-        homeCity: editHomeCity,
-        homeAltitude: parseInt(editHomeAltitude)
-      });
-      setUserProfile({
-        ...userProfile,
-        name: editName,
-        homeCity: editHomeCity,
-        homeAltitude: parseInt(editHomeAltitude)
-      });
-      setShowEditProfile(false);
-      alert('Profile updated successfully!');
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      alert('Error updating profile. Please try again.');
-    }
-    setSaving(false);
-  };
+const handleUpdateProfile = async (e) => {
+  e.preventDefault();
+  setSaving(true);
+  try {
+    // Update the profile in DynamoDB
+    await updateUserProfile(userId, {
+      name: editName,
+      homeCity: editHomeCity,
+      homeAltitude: parseInt(editHomeAltitude)
+    });
+    
+    // Update local state
+    setUserProfile({
+      ...userProfile,
+      name: editName,
+      homeCity: editHomeCity,
+      homeAltitude: parseInt(editHomeAltitude)
+    });
+    
+    // Update home altitude in the state
+    setHomeAlt(editHomeAltitude);
+    
+    setShowEditProfile(false);
+    alert('Profile updated successfully!');
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    alert('Error updating profile. Please try again.');
+  }
+  setSaving(false);
+};
 
   const handleSignOut = async () => {
     try {
