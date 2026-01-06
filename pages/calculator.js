@@ -1,3 +1,5 @@
+import { useState, useEffect, useRef } from 'react';
+import { searchLocations, getElevation } from '../lib/cityElevations';
 import { useState, useEffect } from 'react';
 import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 import { useRouter } from 'next/router';
@@ -10,19 +12,16 @@ export default function Calculator() {
   const [homeLocation, setHomeLocation] = useState('');
   const [homeAlt, setHomeAlt] = useState('');
   const [homeSuggestions, setHomeSuggestions] = useState([]);
-  const [homeSearching, setHomeSearching] = useState(false);
+  const [homeLoading, setHomeLoading] = useState(false);
   const [destLocation, setDestLocation] = useState('');
   const [destAlt, setDestAlt] = useState('');
   const [destSuggestions, setDestSuggestions] = useState([]);
-  const [destSearching, setDestSearching] = useState(false);
+  const [destLoading, setDestLoading] = useState(false);
   const [activityLevel, setActivityLevel] = useState('moderate');
   const [fitnessLevel, setFitnessLevel] = useState('average');
   const [result, setResult] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
-
-  let homeSearchTimeout = null;
-  let destSearchTimeout = null;
 
   useEffect(() => {
     checkUser();
@@ -50,6 +49,85 @@ export default function Calculator() {
       setUser(null);
     }
   };
+
+  // Debounce timer refs
+  const homeTimerRef = useRef(null);
+  const destTimerRef = useRef(null);
+
+  const handleHomeLocationChange = (value) => {
+    setHomeLocation(value);
+    
+    // Clear existing timer
+    if (homeTimerRef.current) {
+      clearTimeout(homeTimerRef.current);
+    }
+    
+    if (value.length < 3) {
+      setHomeSuggestions([]);
+      return;
+    }
+    
+    // Set loading state
+    setHomeLoading(true);
+    
+    // Debounce API call by 400ms
+    homeTimerRef.current = setTimeout(async () => {
+      const results = await searchLocations(value);
+      setHomeSuggestions(results.slice(0, 3)); // Show top 3
+      setHomeLoading(false);
+    }, 400);
+  };
+
+  const handleHomeLocationSelect = async (location) => {
+    setHomeLocation(location.displayName);
+    setHomeSuggestions([]);
+    setHomeLoading(true);
+    
+    const elevation = await getElevation(location.lat, location.lon);
+    if (elevation) {
+      setHomeAlt(elevation.toString());
+    }
+    setHomeLoading(false);
+  };
+
+  const handleDestLocationChange = (value) => {
+    setDestLocation(value);
+    
+    // Clear existing timer
+    if (destTimerRef.current) {
+      clearTimeout(destTimerRef.current);
+    }
+    
+    if (value.length < 3) {
+      setDestSuggestions([]);
+      return;
+    }
+    
+    // Set loading state
+    setDestLoading(true);
+    
+    // Debounce API call by 400ms
+    destTimerRef.current = setTimeout(async () => {
+      const results = await searchLocations(value);
+      setDestSuggestions(results.slice(0, 3)); // Show top 3
+      setDestLoading(false);
+    }, 400);
+  };
+
+  const handleDestLocationSelect = async (location) => {
+    setDestLocation(location.displayName);
+    setDestSuggestions([]);
+    setDestLoading(true);
+    
+    const elevation = await getElevation(location.lat, location.lon);
+    if (elevation) {
+      setDestAlt(elevation.toString());
+    }
+    setDestLoading(false);
+  };
+
+  // Add useRef import at the top
+  // ... rest of your code stays the same
 
   const handleHomeLocationChange = async (value) => {
     setHomeLocation(value);
@@ -435,61 +513,58 @@ export default function Calculator() {
                 type="text" 
                 value={homeLocation}
                 onChange={(e) => handleHomeLocationChange(e.target.value)}
-                placeholder="e.g., Denver, CO"
-                style={{ width: '100%', padding: 'clamp(10px, 2vw, 12px)', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}
+                placeholder="Type at least 3 characters..."
+                style={{ 
+                  width: '100%', 
+                  padding: 'clamp(10px, 2vw, 12px)', 
+                  border: '2px solid #e5e7eb', 
+                  borderRadius: '8px', 
+                  fontSize: 'clamp(0.9rem, 2vw, 1rem)' 
+                }}
               />
-              {homeSearching && (
-                <div style={{ fontSize: '0.85rem', color: '#6b7280', marginTop: '0.5rem' }}>
+              
+              {homeLoading && (
+                <div style={{ 
+                  padding: '10px', 
+                  fontSize: '0.85rem', 
+                  color: '#6b7280',
+                  fontStyle: 'italic' 
+                }}>
                   Searching...
                 </div>
               )}
-              {homeSuggestions.length > 0 && (
+              
+              {homeSuggestions.length > 0 && !homeLoading && (
                 <div style={{
                   position: 'absolute',
                   top: '100%',
                   left: 0,
                   right: 0,
                   background: 'white',
-                  border: '2px solid #e5e7eb',
-                  borderTop: 'none',
-                  borderRadius: '0 0 8px 8px',
-                  maxHeight: '250px',
-                  overflowY: 'auto',
+                  border: '2px solid #2563eb',
+                  borderRadius: '8px',
+                  marginTop: '4px',
                   zIndex: 10,
-                  marginTop: '-2px',
-                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
                 }}>
                   {homeSuggestions.map((location, i) => (
                     <div
                       key={i}
+                      onClick={() => handleHomeLocationSelect(location)}
                       style={{
                         padding: '12px',
                         cursor: 'pointer',
-                        fontSize: 'clamp(0.85rem, 2vw, 0.9rem)',
-                        borderBottom: i < homeSuggestions.length - 1 ? '1px solid #f3f4f6' : 'none'
+                        borderBottom: i < homeSuggestions.length - 1 ? '1px solid #e5e7eb' : 'none',
+                        fontSize: 'clamp(0.9rem, 2vw, 1rem)'
                       }}
-                      onClick={() => handleHomeLocationSelect(location)}
-                      onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
-                      onMouseLeave={(e) => e.target.style.background = 'white'}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#eff6ff'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
                     >
-                      <div style={{ fontWeight: 500 }}>{location.displayName}</div>
-                      {location.elevation && (
-                        <div style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '2px' }}>
-                          {location.elevation.toLocaleString()} ft
-                        </div>
-                      )}
-                      {location.isPopular && (
-                        <div style={{ fontSize: '0.75rem', color: '#2563eb', marginTop: '2px' }}>
-                          ⭐ Popular
-                        </div>
-                      )}
+                      📍 {location.displayName}
                     </div>
                   ))}
                 </div>
               )}
-              <p style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', color: '#6b7280', marginTop: '0.5rem' }}>
-                💡 Start typing to search worldwide locations
-              </p>
             </div>
 
             {/* Home Altitude */}
@@ -502,8 +577,14 @@ export default function Calculator() {
                 value={homeAlt}
                 onChange={(e) => setHomeAlt(e.target.value)}
                 required
-                placeholder="e.g., 500"
-                style={{ width: '100%', padding: 'clamp(10px, 2vw, 12px)', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}
+                placeholder="Auto-filled from location"
+                style={{ 
+                  width: '100%', 
+                  padding: 'clamp(10px, 2vw, 12px)', 
+                  border: '2px solid #e5e7eb', 
+                  borderRadius: '8px', 
+                  fontSize: 'clamp(0.9rem, 2vw, 1rem)' 
+                }}
               />
             </div>
 
@@ -516,46 +597,60 @@ export default function Calculator() {
                 type="text" 
                 value={destLocation}
                 onChange={(e) => handleDestLocationChange(e.target.value)}
-                placeholder="e.g., Aspen, CO"
-                style={{ width: '100%', padding: 'clamp(10px, 2vw, 12px)', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}
+                placeholder="Type at least 3 characters..."
+                style={{ 
+                  width: '100%', 
+                  padding: 'clamp(10px, 2vw, 12px)', 
+                  border: '2px solid #e5e7eb', 
+                  borderRadius: '8px', 
+                  fontSize: 'clamp(0.9rem, 2vw, 1rem)' 
+                }}
               />
-              {destSuggestions.length > 0 && (
+              
+              {destLoading && (
+                <div style={{ 
+                  padding: '10px', 
+                  fontSize: '0.85rem', 
+                  color: '#6b7280',
+                  fontStyle: 'italic' 
+                }}>
+                  Searching...
+                </div>
+              )}
+              
+              {destSuggestions.length > 0 && !destLoading && (
                 <div style={{
                   position: 'absolute',
                   top: '100%',
                   left: 0,
                   right: 0,
                   background: 'white',
-                  border: '2px solid #e5e7eb',
-                  borderTop: 'none',
-                  borderRadius: '0 0 8px 8px',
-                  maxHeight: '200px',
-                  overflowY: 'auto',
+                  border: '2px solid #2563eb',
+                  borderRadius: '8px',
+                  marginTop: '4px',
                   zIndex: 10,
-                  marginTop: '-2px'
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
                 }}>
-                  {destSuggestions.map((city, i) => (
+                  {destSuggestions.map((location, i) => (
                     <div
                       key={i}
+                      onClick={() => handleDestLocationSelect(location)}
                       style={{
-                        padding: '10px',
+                        padding: '12px',
                         cursor: 'pointer',
-                        fontSize: 'clamp(0.85rem, 2vw, 0.9rem)'
+                        borderBottom: i < destSuggestions.length - 1 ? '1px solid #e5e7eb' : 'none',
+                        fontSize: 'clamp(0.9rem, 2vw, 1rem)'
                       }}
-                      onClick={() => handleDestLocationSelect(city)}
-                      onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
-                      onMouseLeave={(e) => e.target.style.background = 'white'}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#eff6ff'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
                     >
-                      {city} ({getCityElevation(city)?.toLocaleString()} ft)
+                      📍 {location.displayName}
                     </div>
                   ))}
                 </div>
               )}
-              <p style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', color: '#6b7280', marginTop: '0.5rem' }}>
-                💡 Start typing to see suggestions
-              </p>
             </div>
-            
+
             {/* Destination Altitude */}
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#1f2937', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
@@ -566,8 +661,14 @@ export default function Calculator() {
                 value={destAlt}
                 onChange={(e) => setDestAlt(e.target.value)}
                 required
-                placeholder="e.g., 10000"
-                style={{ width: '100%', padding: 'clamp(10px, 2vw, 12px)', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}
+                placeholder="Auto-filled from location"
+                style={{ 
+                  width: '100%', 
+                  padding: 'clamp(10px, 2vw, 12px)', 
+                  border: '2px solid #e5e7eb', 
+                  borderRadius: '8px', 
+                  fontSize: 'clamp(0.9rem, 2vw, 1rem)' 
+                }}
               />
             </div>
 
