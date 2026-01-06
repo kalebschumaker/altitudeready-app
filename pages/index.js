@@ -443,8 +443,8 @@ export default function Landing() {
           </div>
           <div>
             <h4 style={{ marginBottom: '1rem' }}>Company</h4>
-            <div style={{ marginBottom: '0.5rem' }}><a href="#" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>About Us</a></div>
-            <div><a href="#" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Contact</a></div>
+            <div style={{ marginBottom: '0.5rem' }}><a href="www.cloudcity-technology.com" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>About Us</a></div>
+            <div><a href="www.cloudcity-technology.com" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Contact</a></div>
           </div>
           <div>
             <h4 style={{ marginBottom: '1rem' }}>Legal</h4>
