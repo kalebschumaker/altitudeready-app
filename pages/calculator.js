@@ -761,11 +761,12 @@ export default function Calculator() {
               </div>
             </div>
 
-            {/* Hydration & Nutrition */}
+                {/* Hydration & Nutrition */}
             <div style={{ background: 'white', padding: 'clamp(1.5rem, 4vw, 2rem)', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', marginBottom: '2rem' }}>
               <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 1.8rem)', marginBottom: '1.5rem', color: '#1f2937' }}>💧 Hydration & Nutrition</h2>
               
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
+                {/* Daily Water Intake */}
                 <div style={{ padding: '1.5rem', background: '#eff6ff', borderRadius: '8px', border: '2px solid #3b82f6' }}>
                   <div style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', marginBottom: '1rem' }}>💧</div>
                   <div style={{ fontWeight: 600, fontSize: 'clamp(1rem, 2vw, 1.1rem)', color: '#1e40af', marginBottom: '0.5rem' }}>
@@ -774,11 +775,43 @@ export default function Calculator() {
                   <div style={{ fontSize: 'clamp(2rem, 5vw, 2.5rem)', fontWeight: 700, color: '#1e3a8a', marginBottom: '0.5rem' }}>
                     {result.hydration}L
                   </div>
-                  <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', color: '#6b7280' }}>
+                  <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', color: '#6b7280', marginBottom: '1rem' }}>
                     per day at {result.destAltitude.toLocaleString()} ft
                   </div>
+                  
+                  {/* CamelBak Affiliate Link */}
+                  <a 
+                    href="https://www.amazon.com/s?k=camelbak+water+bottle&tag=cctllc01-20" 
+                    target="_blank" 
+                    rel="noopener noreferrer sponsored"
+                    style={{
+                      display: 'block',
+                      marginTop: '1rem',
+                      padding: '0.75rem 1rem',
+                      background: 'white',
+                      border: '2px solid #3b82f6',
+                      borderRadius: '8px',
+                      color: '#2563eb',
+                      textDecoration: 'none',
+                      fontWeight: 600,
+                      fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                      textAlign: 'center',
+                      transition: 'all 0.3s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#3b82f6';
+                      e.currentTarget.style.color = 'white';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'white';
+                      e.currentTarget.style.color = '#2563eb';
+                    }}
+                  >
+                    🎒 Shop CamelBak Bottles →
+                  </a>
                 </div>
                 
+                {/* Calorie Increase */}
                 <div style={{ padding: '1.5rem', background: '#fef3c7', borderRadius: '8px', border: '2px solid #f59e0b' }}>
                   <div style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', marginBottom: '1rem' }}>🍽️</div>
                   <div style={{ fontWeight: 600, fontSize: 'clamp(1rem, 2vw, 1.1rem)', color: '#92400e', marginBottom: '0.5rem' }}>
@@ -787,12 +820,44 @@ export default function Calculator() {
                   <div style={{ fontSize: 'clamp(2rem, 5vw, 2.5rem)', fontWeight: 700, color: '#78350f', marginBottom: '0.5rem' }}>
                     +{result.calorieIncrease}%
                   </div>
-                  <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', color: '#6b7280' }}>
+                  <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', color: '#6b7280', marginBottom: '1rem' }}>
                     higher caloric needs
                   </div>
+                  
+                  {/* ProBar Affiliate Link */}
+                  <a 
+                    href="https://www.amazon.com/s?k=probar+energy+bars&tag=cctllc01-20" 
+                    target="_blank" 
+                    rel="noopener noreferrer sponsored"
+                    style={{
+                      display: 'block',
+                      marginTop: '1rem',
+                      padding: '0.75rem 1rem',
+                      background: 'white',
+                      border: '2px solid #f59e0b',
+                      borderRadius: '8px',
+                      color: '#f59e0b',
+                      textDecoration: 'none',
+                      fontWeight: 600,
+                      fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                      textAlign: 'center',
+                      transition: 'all 0.3s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#f59e0b';
+                      e.currentTarget.style.color = 'white';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'white';
+                      e.currentTarget.style.color = '#f59e0b';
+                    }}
+                  >
+                    🍫 Shop ProBar Energy Bars →
+                  </a>
                 </div>
               </div>
 
+              {/* Nutrition Tips */}
               <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#f0fdf4', borderRadius: '8px', border: '2px solid #10b981' }}>
                 <h4 style={{ color: '#065f46', marginBottom: '0.75rem', fontSize: 'clamp(1rem, 2vw, 1.1rem)' }}>💡 Nutrition Tips</h4>
                 <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#166534', lineHeight: 1.8, fontSize: 'clamp(0.85rem, 2vw, 1rem)' }}>
@@ -802,6 +867,19 @@ export default function Calculator() {
                   <li>Consider electrolyte supplements with increased hydration</li>
                   <li>Limit caffeine and alcohol consumption</li>
                 </ul>
+              </div>
+              
+              {/* Affiliate Disclosure */}
+              <div style={{ 
+                marginTop: '1.5rem',
+                padding: '0.75rem', 
+                background: '#f9fafb', 
+                borderRadius: '8px', 
+                fontSize: '0.75rem', 
+                color: '#6b7280',
+                borderLeft: '4px solid #2563eb'
+              }}>
+                <strong>Affiliate Disclosure:</strong> As an Amazon Associate, we earn from qualifying purchases. This helps support AltitudeReady at no additional cost to you.
               </div>
             </div>
 
@@ -852,6 +930,159 @@ export default function Calculator() {
                 );
               })()}
             </div>
+
+{/* Recommended Gear Section */}
+<div style={{ background: 'white', padding: 'clamp(1.5rem, 4vw, 2rem)', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', marginBottom: '2rem' }}>
+              <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 1.8rem)', marginBottom: '1.5rem', color: '#1f2937' }}>
+                🎒 Recommended Gear for {result.destLocation}
+              </h2>
+              
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                gap: '1.5rem'
+              }}>
+                {/* Hydration Pack */}
+                <a 
+                  href="https://www.amazon.com/s?k=hydration+pack&tag=cctllc01-20" 
+                  target="_blank" 
+                  rel="noopener noreferrer sponsored"
+                  style={{ 
+                    textDecoration: 'none', 
+                    border: '2px solid #e5e7eb', 
+                    borderRadius: '12px', 
+                    padding: '1.5rem',
+                    transition: 'all 0.3s',
+                    cursor: 'pointer',
+                    background: 'white'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#2563eb';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#e5e7eb';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <div style={{ fontSize: '3rem', marginBottom: '0.5rem', textAlign: 'center' }}>💧</div>
+                  <h3 style={{ color: '#1f2937', fontSize: '1.1rem', marginBottom: '0.5rem', textAlign: 'center' }}>Hydration Packs</h3>
+                  <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '0.5rem', textAlign: 'center' }}>
+                    Stay hydrated on the go
+                  </p>
+                  <div style={{ color: '#2563eb', fontWeight: 600, fontSize: '0.9rem', textAlign: 'center' }}>Shop Now →</div>
+                </a>
+
+                {/* Electrolyte Supplements */}
+                <a 
+                  href="https://www.amazon.com/s?k=electrolyte+supplements&tag=cctllc01-20" 
+                  target="_blank" 
+                  rel="noopener noreferrer sponsored"
+                  style={{ 
+                    textDecoration: 'none', 
+                    border: '2px solid #e5e7eb', 
+                    borderRadius: '12px', 
+                    padding: '1.5rem',
+                    transition: 'all 0.3s',
+                    cursor: 'pointer',
+                    background: 'white'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#2563eb';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#e5e7eb';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <div style={{ fontSize: '3rem', marginBottom: '0.5rem', textAlign: 'center' }}>💊</div>
+                  <h3 style={{ color: '#1f2937', fontSize: '1.1rem', marginBottom: '0.5rem', textAlign: 'center' }}>Electrolytes</h3>
+                  <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '0.5rem', textAlign: 'center' }}>
+                    Boost acclimation
+                  </p>
+                  <div style={{ color: '#2563eb', fontWeight: 600, fontSize: '0.9rem', textAlign: 'center' }}>Shop Now →</div>
+                </a>
+
+                {/* Pulse Oximeter - Only show for high altitude */}
+                {result.destAltitude > 8000 && (
+                  <a 
+                    href="https://www.amazon.com/s?k=pulse+oximeter&tag=cctllc01-20" 
+                    target="_blank" 
+                    rel="noopener noreferrer sponsored"
+                    style={{ 
+                      textDecoration: 'none', 
+                      border: '2px solid #e5e7eb', 
+                      borderRadius: '12px', 
+                      padding: '1.5rem',
+                      transition: 'all 0.3s',
+                      cursor: 'pointer',
+                      background: 'white'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = '#2563eb';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = '#e5e7eb';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    <div style={{ fontSize: '3rem', marginBottom: '0.5rem', textAlign: 'center' }}>🫀</div>
+                    <h3 style={{ color: '#1f2937', fontSize: '1.1rem', marginBottom: '0.5rem', textAlign: 'center' }}>Pulse Oximeter</h3>
+                    <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '0.5rem', textAlign: 'center' }}>
+                      Monitor O2 levels above 8,000 ft
+                    </p>
+                    <div style={{ color: '#2563eb', fontWeight: 600, fontSize: '0.9rem', textAlign: 'center' }}>Shop Now →</div>
+                  </a>
+                )}
+
+                {/* Energy Bars */}
+                <a 
+                  href="https://www.amazon.com/s?k=energy+bars&tag=cctllc01-20" 
+                  target="_blank" 
+                  rel="noopener noreferrer sponsored"
+                  style={{ 
+                    textDecoration: 'none', 
+                    border: '2px solid #e5e7eb', 
+                    borderRadius: '12px', 
+                    padding: '1.5rem',
+                    transition: 'all 0.3s',
+                    cursor: 'pointer',
+                    background: 'white'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#2563eb';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#e5e7eb';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <div style={{ fontSize: '3rem', marginBottom: '0.5rem', textAlign: 'center' }}>🍫</div>
+                  <h3 style={{ color: '#1f2937', fontSize: '1.1rem', marginBottom: '0.5rem', textAlign: 'center' }}>Energy Bars</h3>
+                  <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '0.5rem', textAlign: 'center' }}>
+                    High-calorie trail snacks
+                  </p>
+                  <div style={{ color: '#2563eb', fontWeight: 600, fontSize: '0.9rem', textAlign: 'center' }}>Shop Now →</div>
+                </a>
+              </div>
+              
+              {/* Affiliate Disclosure */}
+              <div style={{ 
+                marginTop: '1.5rem',
+                padding: '0.75rem', 
+                background: '#f9fafb', 
+                borderRadius: '8px', 
+                fontSize: '0.75rem', 
+                color: '#6b7280',
+                borderLeft: '4px solid #2563eb'
+              }}>
+                <strong>Affiliate Disclosure:</strong> AltitudeReady earns from qualifying purchases through these links at no additional cost to you. We only recommend products that support altitude preparation.
+              </div>
+            </div>
+
 
             {/* Ad - Before sign up CTA */}
             {!user && (
