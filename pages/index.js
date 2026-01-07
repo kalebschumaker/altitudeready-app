@@ -155,7 +155,6 @@ export default function Landing() {
                 Dashboard
               </button>
             ) : (
-              {user ? (
   <button
     onClick={() => router.push('/dashboard')}
     style={{
