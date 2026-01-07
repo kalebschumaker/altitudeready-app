@@ -245,6 +245,33 @@ export default function Dashboard() {
     }
   };
 
+  const handleManageSubscription = async () => {
+  setSaving(true);
+  try {
+    const response = await fetch('/api/create-portal-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        customerId: userProfile.stripeCustomerId,
+      }),
+    });
+
+    const { url } = await response.json();
+    
+    if (url) {
+      window.location.href = url;
+    } else {
+      alert('Error creating portal session');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error opening subscription management');
+  }
+  setSaving(false);
+};
+
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
@@ -382,6 +409,95 @@ export default function Dashboard() {
     {userProfile.subscriptionTier === 'lifetime' ? '⭐ Lifetime Member' : '✨ Pro Member'}
   </div>
 )}
+
+{/* Subscription Status Card */}
+        {userProfile && (
+          <div style={{ 
+            background: 'white', 
+            padding: 'clamp(1.5rem, 4vw, 2.5rem)', 
+            borderRadius: '16px', 
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+            marginBottom: '2rem'
+          }}>
+            <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 1.8rem)', marginBottom: '1.5rem', color: '#1f2937' }}>
+              Subscription
+            </h2>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {/* Current Plan */}
+              <div style={{ 
+                padding: '1.5rem', 
+                background: userProfile.subscriptionTier === 'free' ? '#f9fafb' : '#eff6ff', 
+                borderRadius: '12px',
+                border: `2px solid ${userProfile.subscriptionTier === 'free' ? '#e5e7eb' : '#2563eb'}`
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                  <div>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>Current Plan</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1f2937', textTransform: 'capitalize' }}>
+                      {userProfile.subscriptionTier || 'Free'} 
+                      {userProfile.subscriptionTier === 'lifetime' && ' ⭐'}
+                    </div>
+                    {userProfile.subscriptionStatus && userProfile.subscriptionStatus !== 'active' && (
+                      <div style={{ 
+                        display: 'inline-block',
+                        marginTop: '0.5rem',
+                        padding: '0.25rem 0.75rem',
+                        background: userProfile.subscriptionStatus === 'past_due' ? '#fef3c7' : '#fee2e2',
+                        color: userProfile.subscriptionStatus === 'past_due' ? '#92400e' : '#991b1b',
+                        borderRadius: '12px',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        textTransform: 'uppercase'
+                      }}>
+                        {userProfile.subscriptionStatus}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {userProfile.subscriptionTier === 'free' && (
+                    <button
+                      onClick={() => router.push('/pricing')}
+                      style={{
+                        background: '#2563eb',
+                        color: 'white',
+                        padding: '0.75rem 1.5rem',
+                        borderRadius: '8px',
+                        border: 'none',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        fontSize: '0.95rem'
+                      }}
+                    >
+                      Upgrade Now
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Manage Subscription Button (for Pro users only) */}
+              {userProfile.subscriptionTier === 'pro' && userProfile.stripeCustomerId && (
+                <button
+                  onClick={handleManageSubscription}
+                  disabled={saving}
+                  style={{
+                    background: 'white',
+                    color: '#2563eb',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '8px',
+                    border: '2px solid #2563eb',
+                    fontWeight: 600,
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                    fontSize: '0.95rem',
+                    opacity: saving ? 0.7 : 1
+                  }}
+                >
+                  {saving ? 'Loading...' : 'Manage Subscription'}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
           {userProfile?.homeCity && (
             <p style={{ fontSize: 'clamp(0.95rem, 3vw, 1.1rem)', marginBottom: '0.5rem', color: '#6b7280' }}>
               📍 {userProfile.homeCity}
