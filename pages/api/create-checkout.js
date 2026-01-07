@@ -1,23 +1,6 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+import Stripe from 'stripe';
 
-export default async function handler(req, res) {
-  // Log for debugging
-  console.log('=== API ROUTE DEBUG ===');
-  console.log('STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY);
-  console.log('STRIPE_SECRET_KEY first 7 chars:', process.env.STRIPE_SECRET_KEY?.substring(0, 7));
-  
-  if (!process.env.STRIPE_SECRET_KEY) {
-    return res.status(500).json({ 
-      error: 'Server configuration error: Missing STRIPE_SECRET_KEY' 
-    });
-  }
-  
-console.log('=== API ROUTE STARTED ===');
-console.log('All env vars:', Object.keys(process.env));
-console.log('STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY);
-console.log('STRIPE_SECRET_KEY value:', process.env.STRIPE_SECRET_KEY ? 'EXISTS (length: ' + process.env.STRIPE_SECRET_KEY.length + ')' : 'MISSING');
-
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
   // Add CORS headers
@@ -36,8 +19,15 @@ export default async function handler(req, res) {
   }
 
   // Debug logging
+  console.log('=== API ROUTE DEBUG ===');
   console.log('STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY);
-  console.log('Request body:', req.body);
+  console.log('STRIPE_SECRET_KEY first 7 chars:', process.env.STRIPE_SECRET_KEY?.substring(0, 7));
+  
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return res.status(500).json({ 
+      error: 'Server configuration error: Missing STRIPE_SECRET_KEY' 
+    });
+  }
 
   try {
     const { priceId, userId, userEmail } = req.body;
@@ -45,6 +35,8 @@ export default async function handler(req, res) {
     if (!priceId) {
       return res.status(400).json({ error: 'Missing priceId' });
     }
+
+    console.log('Request body:', req.body);
 
     // Determine if it's a subscription or one-time payment
     const isSubscription = priceId.includes('month') || priceId.includes('year');
