@@ -410,7 +410,7 @@ export default function Dashboard() {
   </div>
 )}
 
-{/* Subscription Status Card */}
+{/* Subscription Status - Seamless Design */}
         {userProfile && (
           <div style={{ 
             background: 'white', 
@@ -423,37 +423,133 @@ export default function Dashboard() {
               Subscription
             </h2>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {/* Current Plan */}
-              <div style={{ 
-                padding: '1.5rem', 
-                background: userProfile.subscriptionTier === 'free' ? '#f9fafb' : '#eff6ff', 
-                borderRadius: '12px',
-                border: `2px solid ${userProfile.subscriptionTier === 'free' ? '#e5e7eb' : '#2563eb'}`
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                  <div>
-                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>Current Plan</div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1f2937', textTransform: 'capitalize' }}>
-                      {userProfile.subscriptionTier || 'Free'} 
-                      {userProfile.subscriptionTier === 'lifetime' && ' ⭐'}
-                    </div>
-                    {userProfile.subscriptionStatus && userProfile.subscriptionStatus !== 'active' && (
-                      <div style={{ 
-                        display: 'inline-block',
-                        marginTop: '0.5rem',
-                        padding: '0.25rem 0.75rem',
-                        background: userProfile.subscriptionStatus === 'past_due' ? '#fef3c7' : '#fee2e2',
-                        color: userProfile.subscriptionStatus === 'past_due' ? '#92400e' : '#991b1b',
-                        borderRadius: '12px',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        textTransform: 'uppercase'
-                      }}>
-                        {userProfile.subscriptionStatus}
-                      </div>
-                    )}
+            {/* Current Plan Display */}
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              paddingBottom: '1.5rem',
+              borderBottom: userProfile.subscriptionTier !== 'free' ? '1px solid #e5e7eb' : 'none',
+              flexWrap: 'wrap',
+              gap: '1rem'
+            }}>
+              <div>
+                <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>Current Plan</div>
+                <div style={{ 
+                  fontSize: '1.8rem', 
+                  fontWeight: 700, 
+                  color: userProfile.subscriptionTier === 'free' ? '#6b7280' : '#2563eb',
+                  textTransform: 'capitalize',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  {userProfile.subscriptionTier || 'Free'}
+                  {userProfile.subscriptionTier === 'lifetime' && <span style={{ fontSize: '1.5rem' }}>⭐</span>}
+                  {userProfile.subscriptionTier === 'pro' && <span style={{ fontSize: '1.5rem' }}>✨</span>}
+                </div>
+                
+                {/* Status Badge */}
+                {userProfile.subscriptionStatus && userProfile.subscriptionStatus !== 'active' && userProfile.subscriptionTier !== 'free' && (
+                  <div style={{ 
+                    display: 'inline-block',
+                    marginTop: '0.75rem',
+                    padding: '0.375rem 0.875rem',
+                    background: userProfile.subscriptionStatus === 'past_due' ? '#fef3c7' : '#fee2e2',
+                    color: userProfile.subscriptionStatus === 'past_due' ? '#92400e' : '#991b1b',
+                    borderRadius: '16px',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
+                  }}>
+                    {userProfile.subscriptionStatus.replace('_', ' ')}
                   </div>
+                )}
+              </div>
+              
+              {/* Upgrade Button for Free Users */}
+              {userProfile.subscriptionTier === 'free' && (
+                <button
+                  onClick={() => router.push('/#pricing')}
+                  style={{
+                    background: '#2563eb',
+                    color: 'white',
+                    padding: '0.875rem 1.75rem',
+                    borderRadius: '10px',
+                    border: 'none',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(37, 99, 235, 0.3)';
+                  }}
+                >
+                  Upgrade to Pro
+                </button>
+              )}
+            </div>
+
+            {/* Manage Subscription Section (Pro users only) */}
+            {userProfile.subscriptionTier === 'pro' && userProfile.stripeCustomerId && (
+              <div style={{ paddingTop: '1.5rem' }}>
+                <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
+                  Manage your subscription, update payment methods, or view billing history
+                </div>
+                <button
+                  onClick={handleManageSubscription}
+                  disabled={saving}
+                  style={{
+                    background: 'white',
+                    color: '#2563eb',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '8px',
+                    border: '2px solid #2563eb',
+                    fontWeight: 600,
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                    fontSize: '0.95rem',
+                    opacity: saving ? 0.7 : 1,
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!saving) {
+                      e.currentTarget.style.background = '#2563eb';
+                      e.currentTarget.style.color = 'white';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!saving) {
+                      e.currentTarget.style.background = 'white';
+                      e.currentTarget.style.color = '#2563eb';
+                    }
+                  }}
+                >
+                  {saving ? 'Loading...' : 'Manage Subscription'}
+                </button>
+              </div>
+            )}
+
+            {/* Lifetime Member Message */}
+            {userProfile.subscriptionTier === 'lifetime' && (
+              <div style={{ 
+                paddingTop: '1.5rem',
+                color: '#6b7280',
+                fontSize: '0.95rem',
+                fontStyle: 'italic'
+              }}>
+                🎉 You're a lifetime member! Enjoy unlimited access to all features forever.
+              </div>
+            )}
+          </div>
+        )}
                   
                   {userProfile.subscriptionTier === 'free' && (
                     <button
