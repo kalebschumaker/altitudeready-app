@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { useRouter } from 'next/router';
+import { signIn } from 'aws-amplify/auth';
 
 export default function Landing() {
   const [user, setUser] = useState(null);
@@ -20,6 +21,14 @@ export default function Landing() {
       setUser(null);
     }
   };
+
+  const handleSignIn = async () => {
+  try {
+    await signIn();
+  } catch (error) {
+    console.error('Error signing in:', error);
+  }
+};
 
   const handleCheckout = async (priceId, planName) => {
     console.log('=== CHECKOUT DEBUG ===');
@@ -146,20 +155,37 @@ export default function Landing() {
                 Dashboard
               </button>
             ) : (
-              <button
-                onClick={() => router.push('/auth/signin')}
-                style={{
-                  background: '#2563eb',
-                  color: 'white',
-                  padding: '0.75rem 1.5rem',
-                  borderRadius: '8px',
-                  border: 'none',
-                  fontWeight: 600,
-                  cursor: 'pointer'
-                }}
-              >
-                Sign In
-              </button>
+              {user ? (
+  <button
+    onClick={() => router.push('/dashboard')}
+    style={{
+      background: '#2563eb',
+      color: 'white',
+      padding: '0.75rem 1.5rem',
+      borderRadius: '8px',
+      border: 'none',
+      fontWeight: 600,
+      cursor: 'pointer'
+    }}
+  >
+    Dashboard
+  </button>
+) : (
+  <button
+    onClick={handleSignIn}
+    style={{
+      background: '#2563eb',
+      color: 'white',
+      padding: '0.75rem 1.5rem',
+      borderRadius: '8px',
+      border: 'none',
+      fontWeight: 600,
+      cursor: 'pointer'
+    }}
+  >
+    Sign In
+  </button>
+)}
             )}
           </div>
 
@@ -278,21 +304,19 @@ export default function Landing() {
             >
               Try Calculator
             </button>
-            <button
-              onClick={() => router.push('/auth/signin')}
-              style={{
-                background: 'transparent',
-                color: 'white',
-                padding: '1rem 2rem',
-                borderRadius: '8px',
-                border: '2px solid white',
-                fontSize: 'clamp(1rem, 2vw, 1.1rem)',
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}
-            >
-              Sign Up Free
-            </button>
+           <button
+  onClick={() => {
+    if (plan.price === '$0') {
+      handleSignIn();
+    } else {
+      handleCheckout(plan.priceId, plan.name);
+    }
+  }}
+  disabled={loading}
+  style={{...}}
+>
+  {loading ? 'Processing...' : (plan.price === '$0' ? 'Get Started' : 'Subscribe Now')}
+</button>
           </div>
         </div>
       </section>
