@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { signIn, signUp, signOut, confirmSignUp, fetchAuthSession } from 'aws-amplify/auth';
 import { getCityElevation, searchCities } from '../lib/cityElevations';
+import { searchLocations, getElevation } from '../lib/cityElevations';
 
 export default function Auth({ onAuthSuccess }) {
   const [mode, setMode] = useState('signup');
