@@ -78,28 +78,30 @@ const handleCheckout = async (priceId, planName) => {
 };
 
   const plans = [
-    {
-      name: 'Free',
-      price: '$0',
-      period: 'Forever',
-      priceId: null,
-      features: ['Basic acclimation calculator', 'General altitude tips', '1 Trip', 'Activity intensity guidance'],
-    },
-    {
-      name: 'Pro Monthly',
-      price: '$0.99',
-      period: 'per month',
-      priceId: 'price_1SmhGbBuBTWWyHXeBZKuwYbS', // Replace with your actual Price ID
-      features: ['Everything in Free', 'Unlimited Trips', 'Remove Ads', 'Priority Support'],
-    },
-    {
-      name: 'Lifetime',
-      price: '$10.00',
-      period: 'one-time',
-      priceId: 'price_1SmhHEBuBTWWyHXeHyqMbamU', // Replace with your actual Price ID
-      features: ['Everything in Pro', 'Lifetime Access', 'All Future Features', 'VIP Support'],
-    },
-  ];
+  {
+    name: 'Free',
+    price: '$0',
+    period: 'Forever',
+    priceId: null,
+    features: ['Basic acclimation calculator', 'General altitude tips', '1 Trip', 'Activity intensity guidance'],
+  },
+  {
+    name: 'Pro Monthly',
+    price: '$0.99',
+    period: 'per month',
+    priceId: 'price_1SmhGbBuBTWWyHXeBZKuwYbS',
+    features: ['Everything in Free', 'Unlimited Trips', 'Remove Ads', 'Priority Support'],
+  },
+  {
+    name: 'Lifetime',
+    price: '$10.00',
+    period: 'one-time',
+    priceId: 'price_1SmhHEBuBTWWyHXeHyqMbamU',
+    featured: true,
+    badge: 'Best Value',
+    features: ['Everything in Pro', 'Lifetime Access', 'All Future Features', 'VIP Support'],
+  },
+];
 
   return (
     <div style={{ fontFamily: 'system-ui, -apple-system, sans-serif', minHeight: '100vh', background: '#f9fafb' }}>
