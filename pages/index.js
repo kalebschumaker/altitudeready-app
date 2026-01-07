@@ -1,10 +1,35 @@
 import { useState, useEffect } from 'react';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { useRouter } from 'next/router';
+import { useState, useEffect } from 'react';
+import { getCurrentUser } from 'aws-amplify/auth';
+import { useRouter } from 'next/router';
+import { loadStripe } from '@stripe/stripe-js';
 
 export default function Landing() {
   const [user, setUser] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    checkUser();
+  }, []);
+  
+  const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+  
+  const checkUser = async () => {
+    try {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+    } catch (err) {
+      setUser(null);
+    }
+  };
+
+  export default function Landing() {
+  const [user, setUser] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [loading, setLoading] = useState(false); // Add this
   const router = useRouter();
 
   useEffect(() => {
@@ -19,6 +44,64 @@ export default function Landing() {
       setUser(null);
     }
   };
+
+  // Add this checkout handler
+  const handleCheckout = async (priceId, planName) => {
+    console.log('=== CHECKOUT DEBUG ===');
+    console.log('User object:', user);
+    console.log('Price ID:', priceId);
+    console.log('Plan name:', planName);
+    
+    setLoading(true);
+
+    try {
+      let userId = null;
+      let userEmail = null;
+
+      // Check if user is logged in
+      if (user) {
+        console.log('User is logged in');
+        userId = user.userId;
+        userEmail = user.signInDetails?.loginId;
+      } else {
+        console.log('User is NOT logged in - proceeding with guest checkout');
+      }
+
+      console.log('Calling API with:', { priceId, userId, userEmail });
+
+      // Create checkout session
+      const response = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId: priceId,
+          userId: userId,
+          userEmail: userEmail,
+        }),
+      });
+
+      console.log('API Response status:', response.status);
+      const data = await response.json();
+      console.log('API Response data:', data);
+
+      if (data.url) {
+        console.log('Redirecting to Stripe:', data.url);
+        window.location.href = data.url;
+      } else {
+        console.error('No URL returned from API');
+        alert('Error: No checkout URL received');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert('Error creating checkout session: ' + error.message);
+      setLoading(false);
+    }
+  };
+
+  return (
+    // ... rest of your component
 
   return (
     <div style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
@@ -342,20 +425,23 @@ export default function Landing() {
               name: 'Free',
               price: '$0',
               period: 'Forever',
+              priceId: null,
               features: ['Basic acclimation calculator', 'General altitude tips', '1 Trip', 'Activity intensity guidance']
             },
             {
               name: 'Pro',
               price: '$0.99',
               period: 'per month',
-              features: ['Basic acclimation calculator', 'General altitude tips', 'Unlimited Trips','Activity intensity guidance', 'Remove Ads']
+              priceId: 'price_1SmhGbBuBTWWyHXeBZKuwYbS', // Your actual Pro Monthly price ID
+              features: ['Everything in Free', 'Unlimited Trips', 'Remove Ads', 'Priority Support']
             },
             {
               name: 'Lifetime',
               price: '$10.00',
               period: 'Once',
+              priceId: 'price_1SmhHEBuBTWWyHXeHyqMbamU', // Your actual Lifetime price ID
               featured: true,
-              features: ['Basic acclimation calculator', 'General altitude tips', 'Unlimited Trips','Activity intensity guidance', 'Remove Ads']
+              features: ['Everything in Pro', 'Lifetime Access', 'All Future Features', 'VIP Support']
             }
           ].map((plan, i) => (
             <div key={i} style={{
@@ -401,7 +487,14 @@ export default function Landing() {
                 ))}
               </ul>
               <button
-                onClick={() => router.push(plan.price === '$0' ? '/auth/signin' : '/pricing')}
+                onClick={() => {
+                  if (plan.price === '$0') {
+                    router.push('/auth/signin');
+                  } else {
+                    handleCheckout(plan.priceId, plan.name);
+                  }
+                }}
+                disabled={loading}
                 style={{
                   width: '100%',
                   padding: '1rem',
@@ -410,17 +503,17 @@ export default function Landing() {
                   border: `2px solid #2563eb`,
                   borderRadius: '8px',
                   fontWeight: 600,
-                  cursor: 'pointer',
-                  fontSize: 'clamp(0.9rem, 2vw, 1rem)'
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                  opacity: loading ? 0.7 : 1
                 }}
               >
-                {plan.price === '$0' ? 'Get Started' : 'View Plans'}
+                {loading ? 'Processing...' : (plan.price === '$0' ? 'Get Started' : 'Subscribe Now')}
               </button>
             </div>
           ))}
         </div>
       </section>
-
       {/* Final CTA */}
       <section style={{
         padding: '5rem 2rem',
