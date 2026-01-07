@@ -1,46 +1,62 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { signIn, signUp, signOut, confirmSignUp, fetchAuthSession } from 'aws-amplify/auth';
-import { getCityElevation, searchCities } from '../lib/cityElevations';
 import { searchLocations, getElevation } from '../lib/cityElevations';
+import { useRouter } from 'next/router';
 
 export default function Auth({ onAuthSuccess }) {
+  const router = useRouter();
   const [mode, setMode] = useState('signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [homeCity, setHomeCity] = useState('');
   const [homeAltitude, setHomeAltitude] = useState('');
-  const [citySuggestions, setCitySuggestions] = useState([]);
+  const [citySearchResults, setCitySearchResults] = useState([]);
+  const [citySearchLoading, setCitySearchLoading] = useState(false);
+  const citySearchTimerRef = useRef(null);
   const [confirmationCode, setConfirmationCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [tempUserData, setTempUserData] = useState(null);
 
-  const handleCityChange = (value) => {
+  // Check for ?mode=login URL parameter
+  useEffect(() => {
+    if (router.query.mode === 'login') {
+      setMode('signin');
+    }
+  }, [router.query.mode]);
+
+  const handleCitySearch = (value) => {
     setHomeCity(value);
     
-    // Auto-fill altitude if city is recognized
-    const elevation = getCityElevation(value);
-    if (elevation) {
-      setHomeAltitude(elevation.toString());
+    if (citySearchTimerRef.current) {
+      clearTimeout(citySearchTimerRef.current);
     }
     
-    // Show suggestions
-    if (value.length >= 2) {
-      const suggestions = searchCities(value);
-      setCitySuggestions(suggestions);
-    } else {
-      setCitySuggestions([]);
+    if (value.length < 3) {
+      setCitySearchResults([]);
+      return;
     }
+    
+    setCitySearchLoading(true);
+    
+    citySearchTimerRef.current = setTimeout(async () => {
+      const results = await searchLocations(value);
+      setCitySearchResults(results.slice(0, 5));
+      setCitySearchLoading(false);
+    }, 400);
   };
 
-  const handleCitySelect = (city) => {
-    setHomeCity(city);
-    const elevation = getCityElevation(city);
+  const handleCitySelect = async (location) => {
+    setHomeCity(location.displayName);
+    setCitySearchResults([]);
+    setCitySearchLoading(true);
+    
+    const elevation = await getElevation(location.lat, location.lon);
     if (elevation) {
       setHomeAltitude(elevation.toString());
     }
-    setCitySuggestions([]);
+    setCitySearchLoading(false);
   };
 
   const handleSignUp = async (e) => {
@@ -60,7 +76,6 @@ export default function Auth({ onAuthSuccess }) {
         }
       });
       
-      // Store user data temporarily for profile creation after confirmation
       setTempUserData({ email, name, homeCity, homeAltitude });
       setMode('confirm');
       setLoading(false);
@@ -81,10 +96,7 @@ export default function Auth({ onAuthSuccess }) {
         confirmationCode: confirmationCode
       });
       
-      // Auto sign in after confirmation
       await signIn({ username: email, password: password });
-      
-      // Pass user data to parent for profile creation
       onAuthSuccess(tempUserData);
     } catch (err) {
       setError(err.message);
@@ -98,11 +110,9 @@ export default function Auth({ onAuthSuccess }) {
     setLoading(true);
 
     try {
-      // First check if there's already a session
       try {
         const session = await fetchAuthSession();
         if (session.tokens) {
-          // Already signed in, just proceed
           onAuthSuccess();
           return;
         }
@@ -114,7 +124,6 @@ export default function Auth({ onAuthSuccess }) {
       onAuthSuccess();
     } catch (err) {
       if (err.message.includes('already a signed in user')) {
-        // Clear the session and try again
         try {
           await signOut();
           await signIn({ username: email, password: password });
@@ -145,7 +154,8 @@ export default function Auth({ onAuthSuccess }) {
       marginBottom: '15px',
       border: '2px solid #e5e7eb',
       borderRadius: '8px',
-      fontSize: 'clamp(0.9rem, 2vw, 1rem)'
+      fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+      boxSizing: 'border-box'
     },
     button: {
       width: '100%',
@@ -185,17 +195,19 @@ export default function Auth({ onAuthSuccess }) {
       left: 0,
       right: 0,
       background: 'white',
-      border: '2px solid #e5e7eb',
-      borderTop: 'none',
-      borderRadius: '0 0 8px 8px',
+      border: '2px solid #2563eb',
+      borderRadius: '8px',
+      marginTop: '4px',
       maxHeight: '200px',
       overflowY: 'auto',
-      zIndex: 10
+      zIndex: 10,
+      boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
     },
     suggestionItem: {
-      padding: '10px',
+      padding: '12px',
       cursor: 'pointer',
-      fontSize: 'clamp(0.85rem, 2vw, 0.9rem)'
+      fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+      borderBottom: '1px solid #e5e7eb'
     }
   };
 
@@ -259,23 +271,30 @@ export default function Auth({ onAuthSuccess }) {
           <div style={{ position: 'relative', marginBottom: '15px' }}>
             <input
               type="text"
-              placeholder="Home City (e.g., Denver, CO)"
+              placeholder="Home City (type at least 3 characters)"
               value={homeCity}
-              onChange={(e) => handleCityChange(e.target.value)}
+              onChange={(e) => handleCitySearch(e.target.value)}
               style={styles.input}
               required
             />
-            {citySuggestions.length > 0 && (
+            
+            {citySearchLoading && (
+              <div style={{ padding: '10px', fontSize: '0.85rem', color: '#6b7280', fontStyle: 'italic' }}>
+                Searching...
+              </div>
+            )}
+            
+            {citySearchResults.length > 0 && !citySearchLoading && (
               <div style={styles.suggestions}>
-                {citySuggestions.map((city, i) => (
+                {citySearchResults.map((location, i) => (
                   <div
                     key={i}
+                    onClick={() => handleCitySelect(location)}
                     style={styles.suggestionItem}
-                    onClick={() => handleCitySelect(city)}
-                    onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
-                    onMouseLeave={(e) => e.target.style.background = 'white'}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#eff6ff'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
                   >
-                    {city} ({getCityElevation(city)?.toLocaleString()} ft)
+                    📍 {location.displayName}
                   </div>
                 ))}
               </div>
