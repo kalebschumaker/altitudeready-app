@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { useRouter } from 'next/router';
-import { signInWithRedirect } from 'aws-amplify/auth';
+
 
 export default function Landing() {
   const [user, setUser] = useState(null);
@@ -22,12 +22,8 @@ export default function Landing() {
     }
   };
 
-const handleSignIn = async () => {
-  try {
-    await signInWithRedirect();
-  } catch (error) {
-    console.error('Error signing in:', error);
-  }
+const handleSignIn = () => {
+  router.push('/dashboard');
 };
 
   const handleCheckout = async (priceId, planName) => {
