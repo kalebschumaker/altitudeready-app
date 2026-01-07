@@ -139,22 +139,8 @@ export default function Landing() {
             <a href="#how-it-works" style={{ color: '#1f2937', textDecoration: 'none', fontWeight: 500 }}>How It Works</a>
             <a href="#pricing" style={{ color: '#1f2937', textDecoration: 'none', fontWeight: 500 }}>Pricing</a>
             <a href="/calculator" style={{ color: '#1f2937', textDecoration: 'none', fontWeight: 500 }}>Calculator</a>
+            
             {user ? (
-              <button
-                onClick={() => router.push('/dashboard')}
-                style={{
-                  background: '#2563eb',
-                  color: 'white',
-                  padding: '0.75rem 1.5rem',
-                  borderRadius: '8px',
-                  border: 'none',
-                  fontWeight: 600,
-                  cursor: 'pointer'
-                }}
-              >
-                Dashboard
-              </button>
-            ) : (
   <button
     onClick={() => router.push('/dashboard')}
     style={{
@@ -185,7 +171,7 @@ export default function Landing() {
     Sign In
   </button>
 )}
-            )}
+            
           </div>
 
           {/* Mobile Menu Button */}
