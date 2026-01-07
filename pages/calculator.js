@@ -1127,7 +1127,44 @@ export default function Calculator() {
             )}
           </div>
         )}
-        
+              {/* Footer */}
+      <footer style={{ background: '#1f2937', color: 'white', padding: '3rem 2rem 1rem' }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '2rem',
+          marginBottom: '2rem'
+        }}>
+          <div>
+            <h4 style={{ marginBottom: '1rem' }}>Product</h4>
+            <div style={{ marginBottom: '0.5rem' }}><a href="#features" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Features</a></div>
+            <div style={{ marginBottom: '0.5rem' }}><a href="#pricing" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Pricing</a></div>
+            <div><a href="/calculator" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Calculator</a></div>
+          </div>
+          <div>
+            <h4 style={{ marginBottom: '1rem' }}>Company</h4>
+            <div style={{ marginBottom: '0.5rem' }}><a href="https://www.cloudcity-technology.com" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>About Us</a></div>
+            <div><a href="https://www.cloudcity-technology.com" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Contact</a></div>
+          </div>
+          <div>
+            <h4 style={{ marginBottom: '1rem' }}>Legal</h4>
+            <div style={{ marginBottom: '0.5rem' }}><a href="/legal#privacy-policy" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Privacy Policy</a></div>
+            <div style={{ marginBottom: '0.5rem' }}><a href="/legal#terms-of-service" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Terms of Service</a></div>
+            <div><a href="/legal#medical-disclaimer" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Medical Disclaimer</a></div>
+          </div>
+        </div>
+        <div style={{
+          textAlign: 'center',
+          paddingTop: '2rem',
+          borderTop: '1px solid rgba(255,255,255,0.1)',
+          color: 'rgba(255,255,255,0.7)',
+          fontSize: 'clamp(0.8rem, 2vw, 1rem)'
+        }}>
+          <p>&copy; 2026 AltitudeReady. All rights reserved. Made with ❤️ at 10,152 feet.</p>
+        </div>
+      </footer>
         {!result && (
           <div style={{ marginTop: '40px', textAlign: 'center', color: '#6b7280', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
             <p>Made with ❤️ at 10,152 feet in Leadville, Colorado</p>
