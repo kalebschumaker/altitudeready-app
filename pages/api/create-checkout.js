@@ -38,8 +38,16 @@ export default async function handler(req, res) {
 
     console.log('Request body:', req.body);
 
-    // Determine if it's a subscription or one-time payment
-    const isSubscription = priceId.includes('month') || priceId.includes('year');
+    // Define which prices are subscriptions vs one-time
+    const SUBSCRIPTION_PRICES = ['price_1SmhGbBuBTWWyHXeBZKuwYbS']; // Pro Monthly
+    const ONE_TIME_PRICES = ['price_1SmhHEBuBTWWyHXeHyqMbamU']; // Lifetime
+    
+    const isSubscription = SUBSCRIPTION_PRICES.includes(priceId);
+    const isOneTime = ONE_TIME_PRICES.includes(priceId);
+    
+    if (!isSubscription && !isOneTime) {
+      return res.status(400).json({ error: 'Invalid price ID' });
+    }
 
     // Base session config
     const sessionConfig = {
@@ -75,7 +83,8 @@ export default async function handler(req, res) {
       }
     }
 
-    console.log('Creating Stripe session with config:', sessionConfig);
+    console.log('Creating Stripe session with mode:', sessionConfig.mode);
+    console.log('Session config:', sessionConfig);
 
     // Create Checkout Session
     const session = await stripe.checkout.sessions.create(sessionConfig);
