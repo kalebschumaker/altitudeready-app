@@ -3,7 +3,7 @@ import { getCurrentUser, fetchAuthSession, signOut } from 'aws-amplify/auth';
 import { useRouter } from 'next/router';
 import { createTrip, getUserTrips, deleteTrip, getUserProfile, updateUserProfile } from '../lib/api';
 import { searchLocations, getElevation } from '../lib/cityElevations';
-
+ 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [userId, setUserId] = useState('');
