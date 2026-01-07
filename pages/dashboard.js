@@ -62,10 +62,10 @@ export default function Dashboard() {
           setTrips(tripsResponse.data || []);
         }
       }
-    } catch (err) {
-      console.error('Auth error:', err);
-      router.push('/auth/signin');
-    }
+} catch (err) {
+  console.error('Auth error:', err);
+  window.location.href = 'https://altitudeready.auth.us-east-2.amazoncognito.com/login?client_id=46ndhhbnlkj6rvq4ieu816c5ip&response_type=code&scope=email+openid+phone&redirect_uri=https://www.altitudeready.com/dashboard';
+}
     setLoading(false);
   };
 
