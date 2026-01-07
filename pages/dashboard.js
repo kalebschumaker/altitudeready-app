@@ -593,8 +593,7 @@ export default function Dashboard() {
                 </button>
               )}
             </div>
-          </div>
-        )}
+          )}
           {userProfile?.homeCity && (
             <p style={{ fontSize: 'clamp(0.95rem, 3vw, 1.1rem)', marginBottom: '0.5rem', color: '#6b7280' }}>
               📍 {userProfile.homeCity}
