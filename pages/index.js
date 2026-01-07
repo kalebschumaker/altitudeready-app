@@ -23,7 +23,7 @@ export default function Landing() {
   };
 
 const handleSignIn = () => {
-  router.push('/signin');  // Route to your embedded sign-in page
+  router.push('/signin?mode=login');
 };
 
   const handleCheckout = async (priceId, planName) => {
