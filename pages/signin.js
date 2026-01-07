@@ -2,6 +2,7 @@ import { useRouter } from 'next/router';
 import { fetchAuthSession, signOut } from 'aws-amplify/auth';
 import Auth from '../components/Auth';
 import { createUserProfile } from '../lib/api';
+import { searchLocations, getElevation } from '../lib/cityElevations';
 
 export default function SignInPage() {
   const router = useRouter();
