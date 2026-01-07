@@ -1,35 +1,11 @@
 import { useState, useEffect } from 'react';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { useRouter } from 'next/router';
-import { useState, useEffect } from 'react';
-import { getCurrentUser } from 'aws-amplify/auth';
-import { useRouter } from 'next/router';
-import { loadStripe } from '@stripe/stripe-js';
 
 export default function Landing() {
   const [user, setUser] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    checkUser();
-  }, []);
-  
-  const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
-  
-  const checkUser = async () => {
-    try {
-      const currentUser = await getCurrentUser();
-      setUser(currentUser);
-    } catch (err) {
-      setUser(null);
-    }
-  };
-
-  export default function Landing() {
-  const [user, setUser] = useState(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [loading, setLoading] = useState(false); // Add this
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -45,7 +21,6 @@ export default function Landing() {
     }
   };
 
-  // Add this checkout handler
   const handleCheckout = async (priceId, planName) => {
     console.log('=== CHECKOUT DEBUG ===');
     console.log('User object:', user);
@@ -92,6 +67,7 @@ export default function Landing() {
       } else {
         console.error('No URL returned from API');
         alert('Error: No checkout URL received');
+        setLoading(false);
       }
     } catch (error) {
       console.error('Checkout error:', error);
@@ -99,9 +75,6 @@ export default function Landing() {
       setLoading(false);
     }
   };
-
-  return (
-    // ... rest of your component
 
   return (
     <div style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
@@ -237,7 +210,7 @@ export default function Landing() {
                 </button>
               ) : (
                 <button
-                  onClick={() => { setMobileMenuOpen(false); router.push('/signin'); }}
+                  onClick={() => { setMobileMenuOpen(false); router.push('/auth/signin'); }}
                   style={{
                     background: '#2563eb',
                     color: 'white',
@@ -306,9 +279,7 @@ export default function Landing() {
               Try Calculator
             </button>
             <button
-              onClick={() => {
-                router.push('/signin');
-              }}
+              onClick={() => router.push('/auth/signin')}
               style={{
                 background: 'transparent',
                 color: 'white',
@@ -375,7 +346,7 @@ export default function Landing() {
           {[
             { num: '1', title: 'Enter Your Details', desc: 'Tell us your home altitude, destination, arrival date, and what activities you\'re planning.' },
             { num: '2', title: 'Get Your Custom Plan', desc: 'Receive a personalized day-by-day acclimation schedule with specific activity recommendations.' },
-            { num: '3', title: 'Track Your Progress', desc: 'Follow symptoms, monitor vital signs, and track sleep quality to see how you are aclimating.' },
+            { num: '3', title: 'Track Your Progress', desc: 'Follow symptoms, monitor vital signs, and track sleep quality to see how you are acclimating.' },
             { num: '4', title: 'Perform Your Best', desc: 'Follow your personalized guidance to acclimate safely and reach full performance capacity.' }
           ].map((step, i) => (
             <div key={i} style={{ display: 'flex', gap: '2rem', alignItems: 'start' }} className="step-container">
@@ -403,7 +374,7 @@ export default function Landing() {
         </div>
       </section>
 
-    {/* Pricing - 3 TIERS HORIZONTAL */}
+      {/* Pricing - 3 TIERS HORIZONTAL */}
       <section id="pricing" style={{ padding: '5rem 2rem', background: 'white' }}>
         <div style={{ maxWidth: '700px', margin: '0 auto 4rem', textAlign: 'center' }}>
           <h2 style={{ fontSize: 'clamp(2rem, 5vw, 2.5rem)', marginBottom: '1rem' }}>Simple, Transparent Pricing</h2>
@@ -432,14 +403,14 @@ export default function Landing() {
               name: 'Pro',
               price: '$0.99',
               period: 'per month',
-              priceId: 'price_1SmhGbBuBTWWyHXeBZKuwYbS', // Your actual Pro Monthly price ID
+              priceId: 'price_1SmhGbBuBTWWyHXeBZKuwYbS',
               features: ['Everything in Free', 'Unlimited Trips', 'Remove Ads', 'Priority Support']
             },
             {
               name: 'Lifetime',
               price: '$10.00',
               period: 'Once',
-              priceId: 'price_1SmhHEBuBTWWyHXeHyqMbamU', // Your actual Lifetime price ID
+              priceId: 'price_1SmhHEBuBTWWyHXeHyqMbamU',
               featured: true,
               features: ['Everything in Pro', 'Lifetime Access', 'All Future Features', 'VIP Support']
             }
@@ -514,6 +485,7 @@ export default function Landing() {
           ))}
         </div>
       </section>
+
       {/* Final CTA */}
       <section style={{
         padding: '5rem 2rem',
