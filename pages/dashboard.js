@@ -64,7 +64,7 @@ export default function Dashboard() {
       }
 } catch (err) {
   console.error('Auth error:', err);
-  window.location.href = 'https://altitudeready.auth.us-east-2.amazoncognito.com/login?client_id=46ndhhbnlkj6rvq4ieu816c5ip&response_type=code&scope=email+openid+phone&redirect_uri=https://www.altitudeready.com/dashboard';
+  window.location.href = 'https://us-east-2njsjeiixc.auth.us-east-2.amazoncognito.com/login?client_id=46ndhhbnlkj6rvq4ieu816c5ip&response_type=code&scope=email+openid+phone&redirect_uri=https://www.altitudeready.com/dashboard';
 }
     setLoading(false);
   };
