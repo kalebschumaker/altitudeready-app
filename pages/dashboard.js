@@ -221,7 +221,7 @@ export default function Dashboard() {
 
   return (
     <div style={{ fontFamily: 'system-ui, -apple-system, sans-serif', minHeight: '100vh', background: '#f9fafb' }}>
-      <style jsx>{\`
+      <style jsx>{`
         @media (max-width: 768px) {
           .stats-grid { grid-template-columns: 1fr !important; }
           .action-buttons { flex-direction: column !important; }
@@ -229,7 +229,7 @@ export default function Dashboard() {
           .header-buttons { flex-direction: column !important; gap: 0.5rem !important; }
           .header-buttons button { padding: 0.5rem 1rem !important; fontSize: 0.9rem !important; }
         }
-      \`}</style>
+      `}</style>
 
       <header style={{ background: 'white', boxShadow: '0 2px 10px rgba(0,0,0,0.1)', padding: 'clamp(1rem, 2vw, 1.5rem) clamp(1rem, 3vw, 2rem)', marginBottom: '2rem' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
@@ -357,7 +357,7 @@ export default function Dashboard() {
                             <div style={{ flex: 1, minWidth: '200px' }}>
                               <div style={{ fontWeight: 600, fontSize: 'clamp(1rem, 2.5vw, 1.1rem)', marginBottom: '0.5rem', color: '#1f2937' }}>{day.activity}</div>
                               <div style={{ marginBottom: '0.75rem', background: '#e5e7eb', height: '8px', borderRadius: '4px', overflow: 'hidden' }}>
-                                <div style={{ width: \`\${day.intensity}%\`, height: '100%', background: day.intensity === 0 ? '#dc2626' : day.intensity < 50 ? '#f59e0b' : day.intensity < 100 ? '#3b82f6' : '#10b981', transition: 'width 0.3s' }}></div>
+                                <div style={{ width: `${day.intensity}%`, height: '100%', background: day.intensity === 0 ? '#dc2626' : day.intensity < 50 ? '#f59e0b' : day.intensity < 100 ? '#3b82f6' : '#10b981', transition: 'width 0.3s' }}></div>
                               </div>
                               <ul style={{ margin: 0, paddingLeft: '1.5rem', fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', color: '#6b7280' }}>
                                 {day.tips.map((tip, i) => <li key={i}>{tip}</li>)}
