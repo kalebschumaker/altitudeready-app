@@ -140,7 +140,7 @@ export default function Legal() {
 function PrivacyPolicy() {
   return (
     <div style={{ lineHeight: 1.8, color: '#374151' }}>
-      <h2 style={{ fontSize: '2rem', marginBottom: '1.5rem', color: '#1f2937' }}>Privacy Policy</h2>
+      <h2 id="privacy-policy" style={{ fontSize: '2rem', marginBottom: '1.5rem', color: '#1f2937' }}>Privacy Policy</h2>
       <p style={{ marginBottom: '1rem', color: '#6b7280', fontSize: '0.95rem' }}>
         <strong>Last Updated:</strong> January 6, 2026
       </p>
@@ -250,7 +250,7 @@ function PrivacyPolicy() {
 function TermsOfService() {
   return (
     <div style={{ lineHeight: 1.8, color: '#374151' }}>
-      <h2 style={{ fontSize: '2rem', marginBottom: '1.5rem', color: '#1f2937' }}>Terms of Service</h2>
+      <h2 id="terms-of-service" style={{ fontSize: '2rem', marginBottom: '1.5rem', color: '#1f2937' }}>Terms of Service</h2>
       <p style={{ marginBottom: '1rem', color: '#6b7280', fontSize: '0.95rem' }}>
         <strong>Last Updated:</strong> January 6, 2026
       </p>
@@ -407,7 +407,7 @@ function TermsOfService() {
 function MedicalDisclaimer() {
   return (
     <div style={{ lineHeight: 1.8, color: '#374151' }}>
-      <h2 style={{ fontSize: '2rem', marginBottom: '1.5rem', color: '#1f2937' }}>Medical Disclaimer</h2>
+      <h2 id="medical-disclaimer" style={{ fontSize: '2rem', marginBottom: '1.5rem', color: '#1f2937' }}>Medical Disclaimer</h2>
       
       <div style={{
         background: '#fee2e2',
