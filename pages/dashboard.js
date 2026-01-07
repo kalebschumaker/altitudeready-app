@@ -467,6 +467,7 @@ export default function Dashboard() {
                   </div>
                 )}
               </div>
+                 )}
               
               {/* Upgrade Button for Free Users */}
               {userProfile.subscriptionTier === 'free' && (
