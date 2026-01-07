@@ -23,12 +23,12 @@ export default function Landing() {
   };
 
   const handleSignIn = async () => {
-  try {
-    await signIn();
-  } catch (error) {
-    console.error('Error signing in:', error);
-  }
-};
+    try {
+      await signIn();
+    } catch (error) {
+      console.error('Error signing in:', error);
+    }
+  };
 
   const handleCheckout = async (priceId, planName) => {
     console.log('=== CHECKOUT DEBUG ===');
@@ -42,7 +42,6 @@ export default function Landing() {
       let userId = null;
       let userEmail = null;
 
-      // Check if user is logged in
       if (user) {
         console.log('User is logged in');
         userId = user.userId;
@@ -53,7 +52,6 @@ export default function Landing() {
 
       console.log('Calling API with:', { priceId, userId, userEmail });
 
-      // Create checkout session
       const response = await fetch('/api/create-checkout', {
         method: 'POST',
         headers: {
@@ -128,7 +126,6 @@ export default function Landing() {
             <span>AltitudeReady</span>
           </div>
           
-          {/* Desktop Navigation */}
           <div style={{ 
             display: 'flex', 
             gap: '2rem', 
@@ -139,42 +136,39 @@ export default function Landing() {
             <a href="#how-it-works" style={{ color: '#1f2937', textDecoration: 'none', fontWeight: 500 }}>How It Works</a>
             <a href="#pricing" style={{ color: '#1f2937', textDecoration: 'none', fontWeight: 500 }}>Pricing</a>
             <a href="/calculator" style={{ color: '#1f2937', textDecoration: 'none', fontWeight: 500 }}>Calculator</a>
-            
             {user ? (
-  <button
-    onClick={() => router.push('/dashboard')}
-    style={{
-      background: '#2563eb',
-      color: 'white',
-      padding: '0.75rem 1.5rem',
-      borderRadius: '8px',
-      border: 'none',
-      fontWeight: 600,
-      cursor: 'pointer'
-    }}
-  >
-    Dashboard
-  </button>
-) : (
-  <button
-    onClick={handleSignIn}
-    style={{
-      background: '#2563eb',
-      color: 'white',
-      padding: '0.75rem 1.5rem',
-      borderRadius: '8px',
-      border: 'none',
-      fontWeight: 600,
-      cursor: 'pointer'
-    }}
-  >
-    Sign In
-  </button>
-)}
-            
+              <button
+                onClick={() => router.push('/dashboard')}
+                style={{
+                  background: '#2563eb',
+                  color: 'white',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '8px',
+                  border: 'none',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Dashboard
+              </button>
+            ) : (
+              <button
+                onClick={handleSignIn}
+                style={{
+                  background: '#2563eb',
+                  color: 'white',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '8px',
+                  border: 'none',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Sign In
+              </button>
+            )}
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             style={{
@@ -191,7 +185,6 @@ export default function Landing() {
           </button>
         </nav>
 
-        {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div style={{
             background: 'white',
@@ -221,7 +214,7 @@ export default function Landing() {
                 </button>
               ) : (
                 <button
-                  onClick={() => { setMobileMenuOpen(false); router.push('/auth/signin'); }}
+                  onClick={() => { setMobileMenuOpen(false); handleSignIn(); }}
                   style={{
                     background: '#2563eb',
                     color: 'white',
@@ -289,19 +282,21 @@ export default function Landing() {
             >
               Try Calculator
             </button>
-           <button
-  onClick={() => {
-    if (plan.price === '$0') {
-      handleSignIn();
-    } else {
-      handleCheckout(plan.priceId, plan.name);
-    }
-  }}
-  disabled={loading}
-  style={{...}}
->
-  {loading ? 'Processing...' : (plan.price === '$0' ? 'Get Started' : 'Subscribe Now')}
-</button>
+            <button
+              onClick={handleSignIn}
+              style={{
+                background: 'transparent',
+                color: 'white',
+                padding: '1rem 2rem',
+                borderRadius: '8px',
+                border: '2px solid white',
+                fontSize: 'clamp(1rem, 2vw, 1.1rem)',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Sign Up Free
+            </button>
           </div>
         </div>
       </section>
@@ -383,7 +378,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing - 3 TIERS HORIZONTAL */}
+      {/* Pricing */}
       <section id="pricing" style={{ padding: '5rem 2rem', background: 'white' }}>
         <div style={{ maxWidth: '700px', margin: '0 auto 4rem', textAlign: 'center' }}>
           <h2 style={{ fontSize: 'clamp(2rem, 5vw, 2.5rem)', marginBottom: '1rem' }}>Simple, Transparent Pricing</h2>
@@ -469,7 +464,7 @@ export default function Landing() {
               <button
                 onClick={() => {
                   if (plan.price === '$0') {
-                    router.push('/auth/signin');
+                    handleSignIn();
                   } else {
                     handleCheckout(plan.priceId, plan.name);
                   }
