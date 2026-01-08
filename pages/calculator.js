@@ -1128,7 +1128,7 @@ export default function Calculator() {
           </div>
         )}
               {/* Footer */}
-      <footer style={{ background: '#1f2937', color: 'white', padding: '3rem 2rem 1rem' }}>
+      <footer style={{ background: 'white', color: 'white', padding: '3rem 2rem 1rem' }}>
         <div style={{
           maxWidth: '1200px',
           margin: '0 auto',
@@ -1165,11 +1165,6 @@ export default function Calculator() {
           <p>&copy; 2026 AltitudeReady. All rights reserved. Made with ❤️ at 10,152 feet.</p>
         </div>
       </footer>
-        {!result && (
-          <div style={{ marginTop: '40px', textAlign: 'center', color: '#6b7280', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
-            <p>Made with ❤️ at 10,152 feet in Leadville, Colorado</p>
-          </div>
-        )}
       </div>
     </div>
   );
