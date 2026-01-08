@@ -38,36 +38,44 @@ export default function Dashboard() {
   }, []);
 
   const checkUser = async () => {
-    try {
-      const currentUser = await getCurrentUser();
-      setUser(currentUser);
-      
-      const session = await fetchAuthSession();
-      const sub = session.tokens?.idToken?.payload?.sub;
-      setUserId(sub);
-      
-      if (sub) {
-        try {
-          const profileResponse = await getUserProfile(sub);
-          if (profileResponse.success && profileResponse.data) {
-            setUserProfile(profileResponse.data);
-            setHomeAltitude(profileResponse.data.homeAltitude?.toString() || '');
-          }
-        } catch (profileError) {
+  try {
+    const currentUser = await getCurrentUser();
+    setUser(currentUser);
+    
+    const session = await fetchAuthSession();
+    const sub = session.tokens?.idToken?.payload?.sub;
+    setUserId(sub);
+    
+    if (sub) {
+      // Make both API calls in parallel instead of sequential
+      const [profileResponse, tripsResponse] = await Promise.all([
+        getUserProfile(sub).catch(err => {
           console.log('No user profile found yet, will create on first trip');
-        }
-        
-        const tripsResponse = await getUserTrips(sub);
-        if (tripsResponse.success) {
-          setTrips(tripsResponse.data || []);
-        }
+          return { success: false };
+        }),
+        getUserTrips(sub).catch(err => {
+          console.log('Error fetching trips:', err);
+          return { success: false, data: [] };
+        })
+      ]);
+      
+      // Process profile response
+      if (profileResponse.success && profileResponse.data) {
+        setUserProfile(profileResponse.data);
+        setHomeAltitude(profileResponse.data.homeAltitude?.toString() || '');
       }
-} catch (err) {
-  console.error('Auth error:', err);
-  router.push('/signin');  // Changed from /auth/signin to /signin
-}
-    setLoading(false);
-  };
+      
+      // Process trips response
+      if (tripsResponse.success) {
+        setTrips(tripsResponse.data || []);
+      }
+    }
+  } catch (err) {
+    console.error('Auth error:', err);
+    router.push('/signin');
+  }
+  setLoading(false);
+};
 
   const handleDestinationSearch = (value) => {
     setDestinationName(value);
