@@ -424,13 +424,73 @@ export default function Dashboard() {
                           <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>💧</div>
                           <div style={{ fontWeight: 600, fontSize: '1rem', color: '#1e40af', marginBottom: '0.5rem' }}>Daily Water Intake</div>
                           <div style={{ fontSize: '2rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '0.5rem' }}>{calculateHydration(trip.altitudeChange)}L</div>
-                          <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>per day at {trip.destinationAltitude?.toLocaleString()} ft</div>
+                          <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '1rem' }}>per day at {trip.destinationAltitude?.toLocaleString()} ft</div>
+                          
+                          <a 
+                            href="https://www.amazon.com/s?k=water+bottle&tag=cctllc01-20" 
+                            target="_blank" 
+                            rel="noopener noreferrer sponsored"
+                            style={{
+                              display: 'block',
+                              marginTop: '1rem',
+                              padding: '0.75rem 1rem',
+                              background: 'white',
+                              border: '2px solid #3b82f6',
+                              borderRadius: '8px',
+                              color: '#2563eb',
+                              textDecoration: 'none',
+                              fontWeight: 600,
+                              fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                              textAlign: 'center',
+                              transition: 'all 0.3s'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = '#3b82f6';
+                              e.currentTarget.style.color = 'white';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'white';
+                              e.currentTarget.style.color = '#2563eb';
+                            }}
+                          >
+                            🎒 Shop Water Bottles →
+                          </a>
                         </div>
                         <div style={{ padding: '1.5rem', background: '#fef3c7', borderRadius: '8px', border: '2px solid #f59e0b' }}>
                           <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🍽️</div>
                           <div style={{ fontWeight: 600, fontSize: '1rem', color: '#92400e', marginBottom: '0.5rem' }}>Calorie Increase</div>
                           <div style={{ fontSize: '2rem', fontWeight: 700, color: '#78350f', marginBottom: '0.5rem' }}>+{calculateCalories(trip.altitudeChange)}%</div>
-                          <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>higher caloric needs</div>
+                          <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '1rem' }}>higher caloric needs</div>
+                          
+                          <a 
+                            href="https://www.amazon.com/s?k=energy+bars&tag=cctllc01-20" 
+                            target="_blank" 
+                            rel="noopener noreferrer sponsored"
+                            style={{
+                              display: 'block',
+                              marginTop: '1rem',
+                              padding: '0.75rem 1rem',
+                              background: 'white',
+                              border: '2px solid #f59e0b',
+                              borderRadius: '8px',
+                              color: '#f59e0b',
+                              textDecoration: 'none',
+                              fontWeight: 600,
+                              fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                              textAlign: 'center',
+                              transition: 'all 0.3s'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = '#f59e0b';
+                              e.currentTarget.style.color = 'white';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'white';
+                              e.currentTarget.style.color = '#f59e0b';
+                            }}
+                          >
+                            🍫 Shop Energy Bars →
+                          </a>
                         </div>
                       </div>
                       <h3 style={{ fontSize: 'clamp(1.3rem, 3vw, 1.5rem)', marginBottom: '1rem', color: '#1f2937' }}>🏥 Altitude Sickness Symptoms</h3>
