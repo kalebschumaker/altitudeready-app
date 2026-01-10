@@ -47,7 +47,6 @@ export default function Dashboard() {
     setUserId(sub);
     
     if (sub) {
-      // Make both API calls in parallel instead of sequential
       const [profileResponse, tripsResponse] = await Promise.all([
         getUserProfile(sub).catch(err => {
           console.log('No user profile found yet, will create on first trip');
@@ -59,13 +58,11 @@ export default function Dashboard() {
         })
       ]);
       
-      // Process profile response
       if (profileResponse.success && profileResponse.data) {
         setUserProfile(profileResponse.data);
         setHomeAltitude(profileResponse.data.homeAltitude?.toString() || '');
       }
       
-      // Process trips response
       if (tripsResponse.success) {
         setTrips(tripsResponse.data || []);
       }
@@ -135,6 +132,40 @@ export default function Dashboard() {
     warning: ["Persistent headache", "Nausea or vomiting", "Dizziness", "Extreme fatigue", "Loss of appetite"],
     emergency: ["Severe headache not relieved by medication", "Confusion or difficulty thinking", "Shortness of breath at rest", "Coughing up pink/frothy fluid", "Unable to walk straight"]
   });
+
+  const getRecommendedGear = (trip) => {
+    const gear = [
+      {
+        emoji: '💧',
+        name: 'Hydration Packs',
+        description: 'Stay hydrated on the go',
+        url: 'https://www.amazon.com/s?k=hydration+pack&tag=cctllc01-20'
+      },
+      {
+        emoji: '💊',
+        name: 'Electrolytes',
+        description: 'Boost acclimation',
+        url: 'https://www.amazon.com/s?k=electrolyte+supplements&tag=cctllc01-20'
+      },
+      {
+        emoji: '🍫',
+        name: 'Energy Bars',
+        description: 'High-calorie trail snacks',
+        url: 'https://www.amazon.com/s?k=energy+bars&tag=cctllc01-20'
+      }
+    ];
+
+    if (trip.destinationAltitude > 8000) {
+      gear.push({
+        emoji: '🫀',
+        name: 'Pulse Oximeter',
+        description: 'Monitor O2 levels above 8,000 ft',
+        url: 'https://www.amazon.com/s?k=pulse+oximeter&tag=cctllc01-20'
+      });
+    }
+
+    return gear;
+  };
 
   const calculateHydration = (altChange) => Math.round((2 * (1 + (altChange / 10000))) * 10) / 10;
   const calculateCalories = (altChange) => Math.round((altChange / 1000) * 10);
@@ -241,13 +272,13 @@ export default function Dashboard() {
       width: 100% !important;
     }
     .header-buttons {
-      flex-direction: row !important;  /* Keep buttons in a row */
+      flex-direction: row !important;
       gap: 0.5rem !important;
     }
     .header-buttons button {
       padding: 0.5rem 1rem !important;
       font-size: 0.9rem !important;
-      white-space: nowrap !important;  /* Prevent text wrapping */
+      white-space: nowrap !important;
     }
   }
 `}</style>
@@ -406,7 +437,7 @@ export default function Dashboard() {
                       {(() => {
                         const symptoms = getSymptomGuide();
                         return (
-                          <div style={{ display: 'grid', gap: '1rem' }}>
+                          <div style={{ display: 'grid', gap: '1rem', marginBottom: '2rem' }}>
                             <div style={{ padding: '1rem', background: '#d1fae5', borderRadius: '8px', border: '2px solid #10b981' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                                 <span style={{ fontSize: '1.2rem' }}>✅</span>
@@ -437,6 +468,70 @@ export default function Dashboard() {
                           </div>
                         );
                       })()}
+
+                      {/* Recommended Gear Section */}
+                      <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'white', borderRadius: '12px', border: '2px solid #e5e7eb' }}>
+                        <h3 style={{ fontSize: 'clamp(1.3rem, 3vw, 1.5rem)', marginBottom: '1.5rem', color: '#1f2937' }}>
+                          🎒 Recommended Gear for {trip.destinationName}
+                        </h3>
+                        
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+                          {getRecommendedGear(trip).map((item, i) => (
+                            <a 
+                              key={i}
+                              href={item.url}
+                              target="_blank" 
+                              rel="noopener noreferrer sponsored"
+                              style={{ 
+                                textDecoration: 'none', 
+                                border: '2px solid #e5e7eb', 
+                                borderRadius: '12px', 
+                                padding: '1.25rem',
+                                transition: 'all 0.3s',
+                                cursor: 'pointer',
+                                background: 'white',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                textAlign: 'center'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.borderColor = '#2563eb';
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.2)';
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.borderColor = '#e5e7eb';
+                                e.currentTarget.style.boxShadow = 'none';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                              }}
+                            >
+                              <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>{item.emoji}</div>
+                              <h4 style={{ color: '#1f2937', fontSize: 'clamp(1rem, 2vw, 1.1rem)', marginBottom: '0.5rem', fontWeight: 600 }}>
+                                {item.name}
+                              </h4>
+                              <p style={{ color: '#6b7280', fontSize: 'clamp(0.85rem, 2vw, 0.9rem)', marginBottom: '0.75rem', flex: 1 }}>
+                                {item.description}
+                              </p>
+                              <div style={{ color: '#2563eb', fontWeight: 600, fontSize: 'clamp(0.85rem, 2vw, 0.9rem)' }}>
+                                Shop Now →
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                        
+                        <div style={{ 
+                          marginTop: '1.5rem',
+                          padding: '0.75rem', 
+                          background: '#f9fafb', 
+                          borderRadius: '8px', 
+                          fontSize: '0.75rem', 
+                          color: '#6b7280',
+                          borderLeft: '4px solid #2563eb'
+                        }}>
+                          <strong>Affiliate Disclosure:</strong> AltitudeReady earns from qualifying purchases through these links at no additional cost to you. We only recommend products that support altitude preparation.
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
