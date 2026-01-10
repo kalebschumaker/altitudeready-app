@@ -31,6 +31,10 @@ export default function Dashboard() {
   const [editHomeCity, setEditHomeCity] = useState('');
   const [editHomeAltitude, setEditHomeAltitude] = useState('');
   
+  const [editCitySearchResults, setEditCitySearchResults] = useState([]);
+  const [editCitySearchLoading, setEditCitySearchLoading] = useState(false);
+  const editCitySearchTimerRef = useRef(null);
+  
   const router = useRouter();
 
   useEffect(() => {
@@ -96,6 +100,30 @@ export default function Dashboard() {
     const elevation = await getElevation(location.lat, location.lon);
     if (elevation) setDestinationAltitude(elevation.toString());
     setDestSearchLoading(false);
+  };
+
+  const handleEditCitySearch = (value) => {
+    setEditHomeCity(value);
+    if (editCitySearchTimerRef.current) clearTimeout(editCitySearchTimerRef.current);
+    if (value.length < 3) {
+      setEditCitySearchResults([]);
+      return;
+    }
+    setEditCitySearchLoading(true);
+    editCitySearchTimerRef.current = setTimeout(async () => {
+      const results = await searchLocations(value);
+      setEditCitySearchResults(results.slice(0, 5));
+      setEditCitySearchLoading(false);
+    }, 400);
+  };
+
+  const handleEditCitySelect = async (location) => {
+    setEditHomeCity(location.displayName);
+    setEditCitySearchResults([]);
+    setEditCitySearchLoading(true);
+    const elevation = await getElevation(location.lat, location.lon);
+    if (elevation) setEditHomeAltitude(elevation.toString());
+    setEditCitySearchLoading(false);
   };
 
   const getDayByDayPlan = (trip) => {
@@ -671,9 +699,31 @@ export default function Dashboard() {
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#374151' }}>Name</label>
                 <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Your name" style={{ width: '100%', padding: '0.75rem', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '1rem', boxSizing: 'border-box' }} />
               </div>
-              <div style={{ marginBottom: '1.25rem' }}>
+              <div style={{ marginBottom: '1.25rem', position: 'relative' }}>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#374151' }}>Home City</label>
-                <input type="text" value={editHomeCity} onChange={(e) => setEditHomeCity(e.target.value)} placeholder="e.g., Denver, CO" style={{ width: '100%', padding: '0.75rem', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '1rem', boxSizing: 'border-box' }} />
+                <input 
+                  type="text" 
+                  value={editHomeCity} 
+                  onChange={(e) => handleEditCitySearch(e.target.value)} 
+                  placeholder="e.g., Denver, CO" 
+                  style={{ width: '100%', padding: '0.75rem', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '1rem', boxSizing: 'border-box' }} 
+                />
+                {editCitySearchLoading && <div style={{ padding: '10px', fontSize: '0.85rem', color: '#6b7280', fontStyle: 'italic' }}>Searching...</div>}
+                {editCitySearchResults.length > 0 && !editCitySearchLoading && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', border: '2px solid #2563eb', borderRadius: '8px', marginTop: '4px', zIndex: 10, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', maxHeight: '200px', overflowY: 'auto' }}>
+                    {editCitySearchResults.map((location, i) => (
+                      <div 
+                        key={i} 
+                        onClick={() => handleEditCitySelect(location)} 
+                        style={{ padding: '12px', cursor: 'pointer', borderBottom: i < editCitySearchResults.length - 1 ? '1px solid #e5e7eb' : 'none', fontSize: '0.95rem' }} 
+                        onMouseEnter={(e) => e.currentTarget.style.background = '#eff6ff'} 
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                      >
+                        📍 {location.displayName}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div style={{ marginBottom: '1.5rem' }}>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#374151' }}>Home Altitude (feet)</label>
@@ -681,7 +731,7 @@ export default function Dashboard() {
               </div>
               <p style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '1.5rem' }}>Note: Email cannot be changed for security reasons</p>
               <div style={{ display: 'flex', gap: '1rem' }}>
-                <button type="button" onClick={() => setShowEditProfile(false)} style={{ flex: 1, padding: '0.75rem', background: 'white', color: '#6b7280', border: '2px solid #e5e7eb', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '1rem' }}>Cancel</button>
+                <button type="button" onClick={() => { setShowEditProfile(false); setEditCitySearchResults([]); }} style={{ flex: 1, padding: '0.75rem', background: 'white', color: '#6b7280', border: '2px solid #e5e7eb', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '1rem' }}>Cancel</button>
                 <button type="submit" disabled={saving} style={{ flex: 1, padding: '0.75rem', background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', fontSize: '1rem', opacity: saving ? 0.7 : 1 }}>{saving ? 'Saving...' : 'Save Changes'}</button>
               </div>
             </form>
