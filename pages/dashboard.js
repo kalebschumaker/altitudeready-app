@@ -230,14 +230,27 @@ export default function Dashboard() {
   return (
     <div style={{ fontFamily: 'system-ui, -apple-system, sans-serif', minHeight: '100vh', background: '#f9fafb' }}>
       <style jsx>{`
-        @media (max-width: 768px) {
-          .stats-grid { grid-template-columns: 1fr !important; }
-          .action-buttons { flex-direction: column !important; }
-          .action-buttons button { width: 100% !important; }
-          .header-buttons { flex-direction: column !important; gap: 0.5rem !important; }
-          .header-buttons button { padding: 0.5rem 1rem !important; fontSize: 0.9rem !important; }
-        }
-      `}</style>
+  @media (max-width: 768px) {
+    .stats-grid {
+      grid-template-columns: 1fr !important;
+    }
+    .action-buttons {
+      flex-direction: column !important;
+    }
+    .action-buttons button {
+      width: 100% !important;
+    }
+    .header-buttons {
+      flex-direction: row !important;  /* Keep buttons in a row */
+      gap: 0.5rem !important;
+    }
+    .header-buttons button {
+      padding: 0.5rem 1rem !important;
+      font-size: 0.9rem !important;
+      white-space: nowrap !important;  /* Prevent text wrapping */
+    }
+  }
+`}</style>
 
       <header style={{ background: 'white', boxShadow: '0 2px 10px rgba(0,0,0,0.1)', padding: 'clamp(1rem, 2vw, 1.5rem) clamp(1rem, 3vw, 2rem)', marginBottom: '2rem' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
